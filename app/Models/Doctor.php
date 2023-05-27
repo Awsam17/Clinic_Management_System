@@ -17,23 +17,28 @@ class Doctor extends Model
         return $this->BelongsTo(User::class,'user_id');
     }
 
-    public function worked_time() : HasMany
+    public function worked_times() : HasMany
     {
         return $this->hasMany(Worked_time::class);
     }
 
-    public function doctor_clinic() : HasMany
+    public function doctor_clinics() : HasMany
     {
         return $this->hasMany(Doc_clinic::class);
     }
 
-    public function doctor_apply() : HasMany
+    public function doctor_applies() : HasMany
     {
         return $this->hasMany(Doc_apply::class);
     }
 
-    public function speciality_doctor() : HasMany
+    public function speciality_doctors() : HasMany
     {
         return $this->hasMany(Spec_doc::class);
+    }
+
+    public function appointments() : HasMany
+    {
+        return $this->hasMany(Appointment::class);
     }
 }

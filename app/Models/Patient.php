@@ -11,7 +11,7 @@ class Patient extends Model
     use HasFactory;
     protected $guarded = [];
 
-    public function medical_report() : HasMany
+    public function medical_reports() : HasMany
     {
         return $this->hasMany(Medical_report::class);
     }

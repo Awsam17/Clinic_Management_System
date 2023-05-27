@@ -17,7 +17,7 @@ class Region extends Model
         return $this->BelongsTo(City::class,'city_id');
     }
 
-    public function address() : HasMany
+    public function addresses() : HasMany
     {
         return $this->hasMany(Address::class);
     }

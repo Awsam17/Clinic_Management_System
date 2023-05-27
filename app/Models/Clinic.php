@@ -13,22 +13,12 @@ class Clinic extends Model
     use HasFactory;
     protected $guarded = [];
 
-    public function incoming_app() : HasMany
+    public function appointments() : HasMany
     {
-        return $this->hasMany(Incoming_app::class);
+        return $this->hasMany(Appointment::class);
     }
 
-    public function booked_app() : HasMany
-    {
-        return $this->hasMany(Booked_app::class);
-    }
-
-    public function archive() : HasMany
-    {
-        return $this->hasMany(Archive::class);
-    }
-
-    public function medical_report() : HasMany
+    public function medical_reports() : HasMany
     {
         return $this->hasMany(Medical_report::class);
     }
@@ -38,27 +28,27 @@ class Clinic extends Model
         return $this->BelongsTo(Address::class,'address_id');
     }
 
-    public function report() : HasMany
+    public function reports() : HasMany
     {
         return $this->HasMany(Report::class);
     }
 
-    public function secretary() : HasMany
+    public function secretaries() : HasMany
     {
         return $this->hasMany(Secretary::class);
     }
 
-    public function doctor_apply() : HasMany
+    public function doctor_applies() : HasMany
     {
         return $this->hasMany(Doc_apply::class);
     }
 
-    public function doctor_clinic() : HasMany
+    public function doctor_clinics() : HasMany
     {
         return $this->hasMany(Doc_clinic::class);
     }
 
-    public function worked_time() : HasMany
+    public function worked_times() : HasMany
     {
         return $this->hasMany(Worked_time::class);
     }

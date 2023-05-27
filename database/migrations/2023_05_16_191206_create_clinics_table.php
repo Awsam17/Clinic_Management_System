@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('phone');
             $table->foreignId('address_id');
-            $table->text('description');
-            $table->string('image');
+            $table->text('description')->nullable();
+            $table->string('image')->nullable();
             $table->string('email');
             $table->string('password');
             $table->integer('num_of_doctors');

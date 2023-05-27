@@ -15,11 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('full_name');
             $table->string('mother_name');
+            $table->string('phone');
             $table->integer('age');
             $table->string('gender');
             $table->string('address');
-            $table->string('blood_type');
-            $table->text('description');
+            $table->string('blood_type')->nullable();
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

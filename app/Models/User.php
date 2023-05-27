@@ -32,24 +32,20 @@ class User extends Authenticatable implements JWTSubject
     ];
    // protected $guarded = [];
 
-    public function archive() : HasMany
-    {
-        return $this->hasMany(Archive::class);
-    }
 
-    public function booked_app() : HasMany
+    public function appoitments() : HasMany
     {
-        return $this->hasMany(Booked_app::class);
-    }
-
-    public function incoming_app() : HasMany
-    {
-        return $this->hasMany(Incoming_app::class);
+        return $this->hasMany(Appointment::class);
     }
 
     public function doctor() : HasOne
     {
         return $this->hasOne(Doctor::class);
+    }
+
+    public function reports() : HasMany
+    {
+        return $this->hasMany(Report::class);
     }
 
     /**

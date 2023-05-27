@@ -13,8 +13,10 @@ return new class extends Migration
     {
         Schema::create('reports', function (Blueprint $table) {
             $table->id();
-            $table->integer('user_id');
+            $table->foreignId('user_id');
             $table->foreignId('clinic_id');
+            $table->string('blocked_email')->nullable();
+            $table->text('note')->nullable();
             $table->timestamps();
         });
     }

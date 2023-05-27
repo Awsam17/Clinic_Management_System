@@ -15,4 +15,9 @@ class Report extends Model
     {
         return $this->BelongsTo(Clinic::class,'clinic_id');
     }
+
+    public function user() : BelongsTo
+    {
+        return $this->BelongsTo(User::class,'user_id');
+    }
 }

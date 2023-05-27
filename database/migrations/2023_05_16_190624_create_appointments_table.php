@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('booked_apps', function (Blueprint $table) {
+        Schema::create('appointments', function (Blueprint $table) {
+
             $table->id();
             $table->foreignId('user_id');
             $table->foreignId('clinic_id');
@@ -19,8 +20,10 @@ return new class extends Migration
             $table->string('full_name');
             $table->integer('age');
             $table->string('gender');
-            $table->text('description');
+            $table->text('description')->nullable();
+            $table->boolean('hide_user')->default(0);
             $table->dateTime('date');
+            $table->enum('status', ['archived', 'pending', 'booked']);
             $table->timestamps();
         });
     }
@@ -30,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('booked_apps');
+        Schema::dropIfExists('appointments');
     }
 };

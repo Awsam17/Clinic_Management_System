@@ -12,7 +12,7 @@ class Speciality extends Model
     use HasFactory;
     protected $guarded = [];
 
-    public function speciality_doctor() : HasMany
+    public function speciality_doctors() : HasMany
     {
         return $this->hasMany(Spec_doc::class);
     }

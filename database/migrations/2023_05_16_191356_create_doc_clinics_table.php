@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('clinic_id');
             $table->foreignId('doctor_id');
             $table->dateTime('join_date');
-            $table->dateTime('end_date');
+            $table->dateTime('end_date')->nullable();
             $table->float('price');
             $table->timestamps();
         });
