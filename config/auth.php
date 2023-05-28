@@ -45,6 +45,16 @@ return [
             'provider' => 'users',
             'hash' => false,
         ],
+        'clinic' => [
+            'driver' => 'jwt',
+            'provider' => 'clinics',
+            'hash' => false,
+        ],
+        'secretary' => [
+            'driver' => 'jwt',
+            'provider' => 'secretaries',
+            'hash' => false,
+        ],
     ],
 
     /*
@@ -68,6 +78,14 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
+        ],
+        'clinics' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Clinic::class,
+        ],
+        'secretaries' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Secretary::class,
         ],
 
         // 'users' => [

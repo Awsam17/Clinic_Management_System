@@ -15,14 +15,15 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('phone');
-            $table->foreignId('address_id');
+            $table->foreignId('address_id')->nullable();
             $table->text('description')->nullable();
             $table->string('image')->nullable();
             $table->string('email');
             $table->string('password');
-            $table->integer('num_of_doctors');
-            $table->integer('num_of_rate');
-            $table->float('total_of_rate');
+            $table->integer('num_of_doctors')->default(0);
+            $table->integer('num_of_rate')->default(1);
+            $table->float('total_of_rate')->default(3);
+            $table->rememberToken();
             $table->timestamps();
         });
     }

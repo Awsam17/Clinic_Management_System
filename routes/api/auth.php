@@ -13,20 +13,33 @@ use App\Http\Controllers\AuthController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-
-
 
 Route::group([
-    'middleware' => 'api'
+    'middleware' => 'api',
+    'prefix' => 'user'
 ], function ($router) {
-    Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/register2', [AuthController::class, 'continueAsdoctor']);
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::post('/refresh', [AuthController::class, 'refresh']);
-    Route::get('/user-profile', [AuthController::class, 'userProfile']);
+    Route::post('/login', [AuthController::class, 'userLogin']);
+    Route::post('/register', [AuthController::class, 'userRegister']);
+    Route::post('/continue_as_doctor', [AuthController::class, 'continueAsdoctor']);
+    Route::post('/logout', [AuthController::class, 'userLogout']);
+  //  Route::post('/refresh', [AuthController::class, 'refresh']);
+    //Route::get('/user-profile', [AuthController::class, 'userProfile']);
+});
+
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'clinic'
+], function ($router) {
+    Route::post('/login', [AuthController::class, 'clinicLogin']);
+    Route::post('/register', [AuthController::class, 'clinicRegister']);
+    Route::post('/logout', [AuthController::class, 'clinicLogout']);
+});
+
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'secretary'
+], function ($router) {
+    Route::post('/login', [AuthController::class, 'secretaryLogin']);
+    Route::post('/register', [AuthController::class, 'secretaryRegister']);
+    Route::post('/logout', [AuthController::class, 'secretaryLogout']);
 });

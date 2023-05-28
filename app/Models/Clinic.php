@@ -7,11 +7,19 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class Clinic extends Model
+class Clinic extends Authenticatable implements JWTSubject
 {
     use HasFactory;
     protected $guarded = [];
+
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
 
     public function appointments() : HasMany
     {
@@ -51,5 +59,18 @@ class Clinic extends Model
     public function worked_times() : HasMany
     {
         return $this->hasMany(Worked_time::class);
+    }
+
+    public function getJWTIdentifier() {
+        return $this->getKey();
+    }
+
+    /**
+     * Return a key value array, containing any custom claims to be added to the JWT.
+     *
+     * @return array
+     */
+    public function getJWTCustomClaims() {
+        return [];
     }
 }
