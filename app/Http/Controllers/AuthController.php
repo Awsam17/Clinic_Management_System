@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Clinic;
 use App\Models\Doctor;
 use App\Models\Secretary;
+use App\Models\Spec_doc;
+use App\Models\Specialty;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -32,7 +35,7 @@ class AuthController extends Controller
         if (! $token = auth('user')->attempt($validator->validated())) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
-        return $this->createNewToken($token);
+        return $this->createNewToken($token , 'user');
     }
 
     public function userRegister(Request $request) {
@@ -40,7 +43,7 @@ class AuthController extends Controller
             'name' => 'required|string|between:2,100',
             'email' => 'required|string|email|max:100|unique:users',
             'password' => 'required|string|min:4',
-            'phone' => 'max:10|min:10|required|string',
+            'phone' => 'required|string|regex:/^\+?[0-9]{10}$/',
             'image' => 'string',
             'gender' => 'string|required',
             'is_doctor' => 'boolean',
@@ -64,6 +67,9 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->only('address'), [
             'address' => 'string|required',
+            'specialties' => 'array',
+            'specialties.*.specialty' => 'string|required',
+            'specialties.*.exp_years' => 'required|integer'
         ]);
         if($validator->fails()){
             return response()->json($validator->errors()->toJson(), 400);
@@ -71,6 +77,20 @@ class AuthController extends Controller
         $user = User::create($request->except('address'));
         $doctor = Doctor::create($request->only('address'));
         $user->doctor()->save($doctor);
+        // specilaities ..
+        $specialties = $request->specialties ;
+
+        foreach ($specialties as $data)
+        {
+            $spec = $data['specialty'];
+            $exp_years  = $data['exp_years'];
+            $specialty = Specialty::where(['name' => $spec ])->first();
+            $spec_doc = Spec_doc::create(['exp_years' => $exp_years]);
+
+            $doctor->specialty_doctors()->save($spec_doc);
+            $specialty->specialty_doctors()->save($spec_doc);
+        }
+
         $token = auth('user')->attempt($request->only('email','password'));
         return $this->createNewToken($token,'user');
     }
@@ -81,7 +101,7 @@ class AuthController extends Controller
     }
 
     public function refresh() {
-        return $this->createNewToken(auth('user')->refresh());
+       // return $this->createNewToken(auth('user')->refresh());
     }
 
     public function userProfile() {
@@ -104,7 +124,7 @@ class AuthController extends Controller
             'name' => 'required|string|between:2,100',
             'email' => 'required|string|email|max:100|unique:clinics',
             'password' => 'required|string|min:4',
-            'phone' => 'max:10|min:10|required|string',
+            'phone' => 'required|string|regex:/^\+?[0-9]{10}$/',
             'image' => 'string',
             'description' => 'string|max:500'
         ]);
@@ -178,4 +198,17 @@ class AuthController extends Controller
         auth('secretary')->logout();
         return response()->json(['message' => 'Secretary successfully signed out']);
     }
+
+
+
+
+
+//    public function print()
+//    {
+//       // $this->authorize('doctor_permission');
+//        if (Gate::allows('doctor_permission')) {
+//            return 'doctor';
+//        }
+//        return 'user';
+//    }
 }

@@ -7,13 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Speciality extends Model
+
+class Specialty extends Model
 {
     use HasFactory;
     protected $guarded = [];
-
-    public function speciality_doctors() : HasMany
+    protected $table ='specialties';
+    public function specialty_doctors() : HasMany
     {
-        return $this->hasMany(Spec_doc::class);
+        return $this->hasMany(Spec_doc::class , 'specialty_id');
     }
 }

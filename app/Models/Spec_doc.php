@@ -16,8 +16,8 @@ class Spec_doc extends Model
         return $this->BelongsTo(Doctor::class,'doctor_id');
     }
 
-    public function speciality() : BelongsTo
+    public function specialty() : BelongsTo
     {
-        return $this->BelongsTo(Speciality::class,'speciality_id');
+        return $this->BelongsTo(Specialty::class,'specialty_id');
     }
 }

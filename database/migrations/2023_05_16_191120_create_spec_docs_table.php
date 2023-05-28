@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('spec_docs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('doctor_id');
+            $table->foreignId('doctor_id')->nullable();
             $table->string('exp_years');
-            $table->foreignId('speciality_id');
+            $table->foreignId('specialty_id')->nullable();
             $table->timestamps();
         });
     }

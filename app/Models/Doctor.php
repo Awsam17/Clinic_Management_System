@@ -32,7 +32,7 @@ class Doctor extends Model
         return $this->hasMany(Doc_apply::class);
     }
 
-    public function speciality_doctors() : HasMany
+    public function specialty_doctors() : HasMany
     {
         return $this->hasMany(Spec_doc::class);
     }
