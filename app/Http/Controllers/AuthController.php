@@ -198,17 +198,4 @@ class AuthController extends Controller
         auth('secretary')->logout();
         return response()->json(['message' => 'Secretary successfully signed out']);
     }
-
-
-
-
-
-//    public function print()
-//    {
-//       // $this->authorize('doctor_permission');
-//        if (Gate::allows('doctor_permission')) {
-//            return 'doctor';
-//        }
-//        return 'user';
-//    }
 }

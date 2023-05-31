@@ -14,15 +14,15 @@ return new class extends Migration
         Schema::create('appointments', function (Blueprint $table) {
 
             $table->id();
-            $table->foreignId('user_id');
-            $table->foreignId('clinic_id');
-            $table->integer('doctor_id');
+            $table->foreignId('user_id')->nullable();
+            $table->foreignId('clinic_id')->nullable();
+            $table->integer('doctor_id')->nullable();
             $table->string('full_name');
             $table->integer('age');
             $table->string('gender');
             $table->text('description')->nullable();
             $table->boolean('hide_user')->default(0);
-            $table->dateTime('date');
+            $table->date('date');
             $table->enum('status', ['archived', 'pending', 'booked']);
             $table->timestamps();
         });

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\ClinicController;
+use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -45,5 +47,3 @@ Route::group([
     Route::post('/register', [AuthController::class, 'secretaryRegister']);
     Route::post('/logout', [AuthController::class, 'secretaryLogout']);
 });
-
-Route::post('/doctors', [UserController::class, 'searchSpecialtyDoctor']);

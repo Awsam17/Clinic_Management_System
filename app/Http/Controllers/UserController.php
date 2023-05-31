@@ -9,6 +9,7 @@ use App\Models\Specialty;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\MockObject\Api;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -37,27 +38,26 @@ class UserController extends Controller
         return $this->apiResponse($data, 'home done', 200);
     }
 
-    public function searchClinics()
-    {
-        $search_text = $_GET['name'];
-        $clinics = Clinic::where('name', 'LIKE', '%' . $search_text . '%')->get();
-        if (!$clinics->isEmpty()) {
-            return $this->apiResponse($clinics, 'successfully searched !', 200);
-        }
-        return $this->apiResponse(null, 'no results !', 404);
-    }
-
     public function getClinics()
     {
         $clinics = Clinic::all();
         return $this->apiResponse($clinics, 'all clinic has been got successfully !', 200);
     }
 
-    public function getDoctor()
+    public function getSpecialties()
     {
-        $all_doctors = [];
-        $doctors = Doctor::all();
-        // $doctors = Doctor::with('user')->get();
+        $specialties = Specialty::all();
+        return $this->apiResponse($specialties, 'all specialties has been got successfully !', 200);
+    }
+
+    public function getSpecialtyDoctors()
+    {
+        $specialty_id = $_GET['id'];
+        $doctors_data = [];
+        $doctors = Doctor::query()
+            ->join('spec_docs', 'doctors.id', '=', 'spec_docs.doctor_id')
+            ->where('spec_docs.specialty_id', '=', $specialty_id)
+            ->get();
         foreach ($doctors as $doctor) {
             $data = $doctor->user;
             $doctor_info = [
@@ -68,46 +68,158 @@ class UserController extends Controller
                 'gender' => $data->gender,
                 'address' => $doctor->address
             ];
-            $all_doctors[] = $doctor_info;
+            $doctors_data[] = $doctor_info;
         }
-        return $this->apiResponse($all_doctors, 'all doctor has been got successfully !', 200);
-
+        if (!empty($doctors_data)) {
+            return $this->apiResponse($doctors_data, 'doctors has been got successfully !', 200);
+        }
+        return $this->apiResponse(null, 'no results !', 404);
     }
 
-    public function getSpecialties()
+    public function getClinicDoctors()
     {
-        $specialties = Specialty::all();
-        return $this->apiResponse($specialties, 'all specialties has been got successfully !', 200);
+        $clinic_id = $_GET['id'];
+        $doctors_data = [];
+        $doctors = Doctor::query()
+            ->join('doc_clinics', 'doctors.id', '=', 'doc_clinics.doctor_id')
+            ->where('doc_clinics.clinic_id', '=', $clinic_id)
+            ->get();
+        foreach ($doctors as $doctor) {
+            $data = $doctor->user;
+            $specialties = Specialty::query()
+                ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
+                ->where('spec_docs.doctor_id', '=', $doctor->id)
+                ->select('name AS specialty_name','exp_years AS experience_years')
+                ->get();
+            $doctor_info = [
+                'id' => $doctor->id,
+                'name' => $data->name,
+                'image' => $data->image,
+                'specialties' => $specialties
+            ];
+            $doctors_data[] = $doctor_info;
+        }
+        if (!empty($doctors_data)) {
+            return $this->apiResponse($doctors_data, 'doctors has been got successfully !', 200);
+        }
+        return $this->apiResponse(null, 'no results !', 404);
     }
 
-    public function searchClinicDoctors($id)
+    public function doctorProfile()
     {
-//        $search_text = $_GET['name'];
-//        $doctors = Doctor::where('name','LIKE','%'.$search_text.'%')->get();
-//        if(!$doctors->isEmpty())
-//        {
-//
-//
-//            return $this->apiResponse($doctors , 'successfully searched !' , 200);
-//        }
-//        return $this->apiResponse(null , 'no results !' , 404);
+        $id = $_GET['id'];
+        $doctor = Doctor::find($id);
+        if(!empty($doctor)) {
+            $data = $doctor->user;
+            $specialties = Specialty::query()
+                ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
+                ->where('spec_docs.doctor_id', '=', $doctor->id)
+                ->select('specialty_id','exp_years AS experience_years','name')
+                ->get();
+
+            $clinics = Clinic::query()
+                ->join('doc_clinics', 'clinics.id', '=', 'doc_clinics.clinic_id')
+                ->where('doc_clinics.doctor_id', '=', $doctor->id)
+                ->select('clinics.id AS id','name','price','image', DB::raw('total_of_rate / num_of_rate AS rate'))
+                ->get();
+//            $rate = ($clinics->total_of_rate)/($clinics->num_of_rate);
+//            $clinics['rate']=$rate;
+            $doctor_info = [
+                'id' => $doctor->id,
+                'name' => $data->name,
+                'phone' => $data->phone,
+                'image' => $data->image,
+                'gender' => $data->gender,
+                'address' => $doctor->address,
+                'specialties' => $specialties,
+                'clinics' => $clinics
+            ];
+            return $this->apiResponse($doctor_info, 'doctor'."'".'s profile has been got successfully !', 200);
+        }
+        return $this->apiResponse(null, "doctor's profile not found !", 200);
     }
 
-    public function searchSpecialtyDoctor()
+    public function searchClinics()
     {
-//        $search_text = $_GET['name'];
-//        $id = $_GET['id'];
-//        $doctors = Spec_doc::where(['specialty_id' => $id ])
-//            ->join('doctors','doctors.id','doctor_id')
-//            ->get();
-//        return $doctors;
-//        if (!$doctors->isEmpty()) {
-//
-//
-//
-//            return $this->apiResponse($doctors, 'successfully searched !', 200);
-//        }
-//        return $this->apiResponse(null, 'no results !', 404);
+        $search_text = $_GET['name'];
+        $clinics = Clinic::where('name', 'LIKE', '%' . $search_text . '%')->get();
+        if (!$clinics->isEmpty()) {
+            return $this->apiResponse($clinics, 'successfully searched !', 200);
+        }
+        return $this->apiResponse(null, 'no results !', 404);
     }
 
+    public function searchClinicDoctors()
+    {
+        $searchText = $_GET['name'];
+        $clinic_id = $_GET['id'];
+
+        $users = User::where('name', 'like', '%' . $searchText . '%')
+            ->whereHas('doctor', function ($query) use ($clinic_id) {
+                $query->whereHas('doctor_clinics', function ($query) use ($clinic_id) {
+                    $query->where('clinic_id', $clinic_id);
+                });
+            })
+            ->get();
+        $result = [];
+        foreach ($users as $user) {
+            $doctor = $user->doctor;
+            $specialties = Specialty::query()
+                ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
+                ->where('spec_docs.doctor_id', '=', $doctor->id)
+                ->get();
+            $temp = [
+                'id' => $user->doctor->id,
+                'name' => $user->name,
+                'gender' => $user->gender,
+                'image' => $user->image,
+                'phone' => $user->phone,
+                'address' => $user->doctor->address,
+                'specialty' => $specialties
+            ];
+            $result[] = $temp;
+
+        }
+        if (!empty($result)) {
+            return $this->apiResponse($result, 'Ok !', 200);
+        }
+        return $this->apiResponse(null, 'no results !', 404);
+
+    }
+
+    public function searchSpecialtyDoctors()
+    {
+        $searchText = $_GET['name'];
+        $specialty_id = $_GET['id'];
+
+        $users = User::where('name', 'like', '%' . $searchText . '%')
+            ->whereHas('doctor', function ($query) use ($specialty_id) {
+                $query->whereHas('specialty_doctors', function ($query) use ($specialty_id) {
+                    $query->where('specialty_id', $specialty_id);
+                });
+            })
+            ->get();
+        $result = [];
+        foreach ($users as $user) {
+            $doctor = $user->doctor;
+            $specialties = Specialty::query()
+                ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
+                ->where('spec_docs.doctor_id', '=', $doctor->id)
+                ->get();
+            $temp = [
+                'id' => $user->doctor->id,
+                'name' => $user->name,
+                'gender' => $user->gender,
+                'image' => $user->image,
+                'phone' => $user->phone,
+                'address' => $user->doctor->address,
+                'specialty' => $specialties
+            ];
+            $result[] = $temp;
+        }
+        if (! empty($result)) {
+            return $this->apiResponse($result, 'Ok !', 200);
+        }
+        return $this->apiResponse(null, 'no results !', 404);
+    }
 }

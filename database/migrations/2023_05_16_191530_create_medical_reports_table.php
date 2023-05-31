@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('medical_reports', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('clinic_id');
-            $table->foreignId('patient_id');
+            $table->foreignId('clinic_id')->nullable();
+            $table->foreignId('patient_id')->nullable();
             $table->string('name');
             $table->string('specialty');
             $table->text('description')->nullable();

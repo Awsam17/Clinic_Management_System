@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('worked_times', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('doctor_id');
-            $table->foreignId('clinic_id');
+            $table->foreignId('doctor_id')->nullable();
+            $table->foreignId('clinic_id')->nullable();
             $table->integer('day');
             $table->integer('start');
             $table->integer('end');
