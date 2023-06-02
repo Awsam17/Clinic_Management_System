@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\ClinicController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -18,7 +17,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::group([
     'middleware' => 'api',
-    'prefix' => 'clinic'
+    'prefix' => 'super'
 ], function ($router) {
-    Route::post('/approve_doctor', [ClinicController::class, 'approveDoctor']);
+    Route::get('/statistics', [DashboardController::class, 'statistics']);
+    Route::get('/doctors', [DashboardController::class, 'getDoctors']);
+    Route::get('/clinics', [DashboardController::class, 'getClinics']);
+    Route::get('/users', [DashboardController::class, 'getUsers']);
 });

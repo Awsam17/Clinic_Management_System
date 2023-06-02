@@ -8,6 +8,7 @@ use App\Models\Doctor;
 use App\Models\Worked_time;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class ClinicController extends Controller
 {
@@ -55,6 +56,8 @@ class ClinicController extends Controller
             $clinic->worked_times()->save($worked_time);
         }
 
+        $clinic->num_of_doctors++;
+        $clinic->save();
         return $this->apiResponse(null,'Done !','200');
     }
 }

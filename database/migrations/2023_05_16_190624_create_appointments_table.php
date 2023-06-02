@@ -23,7 +23,8 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->boolean('hide_user')->default(0);
             $table->date('date');
-            $table->enum('status', ['archived', 'pending', 'booked']);
+            $table->enum('status', ['archived', 'pending', 'booked'])->default('pending');
+            $table->float('price')->nullable();
             $table->timestamps();
         });
     }
