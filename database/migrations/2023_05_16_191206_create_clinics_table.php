@@ -19,10 +19,12 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('image')->nullable();
             $table->string('email');
+            $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->integer('num_of_doctors')->default(0);
             $table->integer('num_of_rate')->default(1);
             $table->float('total_of_rate')->default(3);
+            $table->string('code')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

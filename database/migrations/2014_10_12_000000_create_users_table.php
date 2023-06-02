@@ -22,6 +22,7 @@ return new class extends Migration
             $table->integer('reports_num')->default(0);
             $table->string('gender');
             $table->boolean('is_doctor')->default(false);
+            $table->string('code')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

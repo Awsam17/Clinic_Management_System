@@ -2,15 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\SendCodeResetPassword;
+use App\Mail\SendCodeVerification;
 use App\Models\Clinic;
 use App\Models\Doctor;
+use App\Models\ResetCodePassword;
 use App\Models\Secretary;
 use App\Models\Spec_doc;
 use App\Models\Specialty;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -63,6 +70,7 @@ class AuthController extends Controller
         return $this->createNewToken($token,'user');
     }
 
+
     public function continueAsdoctor(Request $request)
     {
         $validator = Validator::make($request->only('address'), [
@@ -98,6 +106,98 @@ class AuthController extends Controller
     public function userLogout() {
         auth('user')->logout();
         return response()->json(['message' => 'User successfully signed out']);
+    }
+
+    public function userForgotPassword(Request $request)
+    {
+        $data = $request->validate([
+            'email' => 'required|email|exists:users'
+        ]);
+
+        ResetCodePassword::query()->where('email',$request->email)->delete();
+
+        $data['code'] = mt_rand(100000,999999);
+
+        ResetCodePassword::query()->create($data);
+
+        Mail::to($request->email)->send(new SendCodeResetPassword($data['code']));
+
+        return $this->apiResponse(null,'email sent successfully !',200);
+    }
+
+    public function userCheckCode(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string|exists:reset_code_passwords'
+        ]);
+
+        $reset = ResetCodePassword::query()->where('code',$request->code)->first();
+
+        if ($reset->created_at > now()->addDay())
+        {
+            $reset->delete();
+            return response()->json([
+                'message' => 'code is expired !'
+            ]);
+        }
+        $data['code'] = $reset->code;
+        return $this->apiResponse($data,'code is valid !',200);
+    }
+
+    public function userResetPassword(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string|exists:reset_code_passwords',
+            'password' => 'required|confirmed'
+        ]);
+
+        $reset = ResetCodePassword::query()->where('code',$request->code)->first();
+
+        if ($reset->created_at > now()->addDay())
+        {
+            $reset->delete();
+            return response()->json([
+                'message' => 'code is expired !'
+            ]);
+        }
+
+        $user = User::query()->where('email',$reset->email);
+
+        $user->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        $reset->delete();
+
+        return $this->apiResponse(null,'password successfully reset !',200);
+    }
+
+    public function userRequestVerify(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+        $code = mt_rand(100000,999999);
+        $user = User::query()->where('email',$request->email)->update(['code'=>$code]);
+        Mail::to($request->email)->send(new SendCodeVerification($code));
+
+        return $this->apiResponse(null,'email sent successfully !',200);
+    }
+
+    public function userVerify(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|exists:users|string',
+        ]);
+        $user = User::where('code',$request->code)->first();
+        $user->email_verified_at = Carbon::now();
+        $user->save();
+        $token = auth('user')->login($user);
+        $data = [
+            'user' => $user,
+            'token' => $token
+        ];
+        return $this->apiResponse($data,'user successfully verified !',200);
     }
 
     public function refresh() {
@@ -158,6 +258,98 @@ class AuthController extends Controller
         return response()->json(['message' => 'Clinic successfully signed out']);
     }
 
+    public function clinicForgotPassword(Request $request)
+    {
+        $data = $request->validate([
+            'email' => 'required|email|exists:clinics'
+        ]);
+
+        ResetCodePassword::query()->where('email',$request->email)->delete();
+
+        $data['code'] = mt_rand(100000,999999);
+
+        ResetCodePassword::query()->create($data);
+
+        Mail::to($request->email)->send(new SendCodeResetPassword($data['code']));
+
+        return $this->apiResponse(null,'email sent successfully !',200);
+    }
+
+    public function clinicCheckCode(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string|exists:reset_code_passwords'
+        ]);
+
+        $reset = ResetCodePassword::query()->where('code',$request->code)->first();
+
+        if ($reset->created_at > now()->addDay())
+        {
+            $reset->delete();
+            return response()->json([
+                'message' => 'code is expired !'
+            ]);
+        }
+
+        $data['code'] = $reset->code;
+        return $this->apiResponse($data,'code is valid !',200);
+    }
+
+    public function clinicResetPassword(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string|exists:reset_code_passwords',
+            'password' => 'required|confirmed'
+        ]);
+
+        $reset = ResetCodePassword::query()->where('code',$request->code)->first();
+
+        if ($reset->created_at > now()->addDay())
+        {
+            $reset->delete();
+            return response()->json([
+                'message' => 'code is expired !'
+            ]);
+        }
+
+        $clinic = Clinic::query()->where('email',$reset->email);
+
+        $clinic->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        $reset->delete();
+
+        return $this->apiResponse(null,'password successfully reset !',200);
+    }
+
+    public function clinicRequestVerify(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+        $code = mt_rand(100000,999999);
+        $clinic = Clinic::query()->where('email',$request->email)->update(['code'=>$code]);
+        Mail::to($request->email)->send(new SendCodeVerification($code));
+
+        return $this->apiResponse(null,'email sent successfully !',200);
+    }
+
+    public function clinicVerify(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|exists:clinics|string',
+        ]);
+        $clinic = Clinic::where('code',$request->code)->first();
+        $clinic->email_verified_at = Carbon::now();
+        $clinic->save();
+        $token = auth('clinic')->login($clinic);
+        $data = [
+            'user' => $clinic,
+            'token' => $token
+        ];
+        return $this->apiResponse($data,'clinic successfully verified !',200);
+    }
 
     /// Scretary auth !!!!!
 
@@ -198,4 +390,98 @@ class AuthController extends Controller
         auth('secretary')->logout();
         return response()->json(['message' => 'Secretary successfully signed out']);
     }
+
+    public function secretaryForgotPassword(Request $request)
+    {
+        $data = $request->validate([
+            'email' => 'required|email|exists:secretaries'
+        ]);
+
+        ResetCodePassword::query()->where('email',$request->email)->delete();
+
+        $data['code'] = mt_rand(100000,999999);
+
+        ResetCodePassword::query()->create($data);
+
+        Mail::to($request->email)->send(new SendCodeResetPassword($data['code']));
+
+        return $this->apiResponse(null,'email sent successfully !',200);
+    }
+
+    public function secretaryCheckCode(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string|exists:reset_code_passwords'
+        ]);
+
+        $reset = ResetCodePassword::query()->where('code',$request->code)->first();
+
+        if ($reset->created_at > now()->addDay())
+        {
+            $reset->delete();
+            return response()->json([
+                'message' => 'code is expired !'
+            ]);
+        }
+
+        $data['code'] = $reset->code;
+        return $this->apiResponse($data,'code is valid !',200);
+    }
+
+    public function secretaryResetPassword(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string|exists:reset_code_passwords',
+            'password' => 'required|confirmed'
+        ]);
+
+        $reset = ResetCodePassword::query()->where('code',$request->code)->first();
+
+        if ($reset->created_at > now()->addDay())
+        {
+            $reset->delete();
+            return response()->json([
+                'message' => 'code is expired !'
+            ]);
+        }
+
+        $secretary = Secretary::query()->where('email',$reset->email);
+
+        $secretary->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        $reset->delete();
+
+        return $this->apiResponse(null,'password successfully reset !',200);
+    }
+
+    public function secretaryRequestVerify(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+        $code = mt_rand(100000,999999);
+        Secretary::query()->where('email',$request->email)->update(['code'=>$code]);
+        Mail::to($request->email)->send(new SendCodeVerification($code));
+
+        return $this->apiResponse(null,'email sent successfully !',200);
+    }
+
+    public function secretaryVerify(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|exists:secretaries|string',
+        ]);
+        $secretary = Secretary::where('code',$request->code)->first();
+        $secretary->email_verified_at = Carbon::now();
+        $secretary->save();
+        $token = auth('secretary')->login($secretary);
+        $data = [
+            'user' => $secretary,
+            'token' => $token
+        ];
+        return $this->apiResponse($data,'secretary successfully verified !',200);
+    }
+
 }

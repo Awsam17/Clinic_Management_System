@@ -26,8 +26,11 @@ Route::group([
     Route::post('/register', [AuthController::class, 'userRegister']);
     Route::post('/continue_as_doctor', [AuthController::class, 'continueAsdoctor']);
     Route::post('/logout', [AuthController::class, 'userLogout']);
-  //  Route::post('/refresh', [AuthController::class, 'refresh']);
-    //Route::get('/user-profile', [AuthController::class, 'userProfile']);
+    Route::post('/forgot_password', [AuthController::class, 'userForgotPassword']);
+    Route::post('/check_code', [AuthController::class, 'userCheckCode']);
+    Route::post('/reset_password', [AuthController::class, 'userResetPassword']);
+    Route::post('/request_verify', [AuthController::class, 'userRequestVerify']);
+    Route::post('/verify', [AuthController::class, 'userVerify']);
 });
 
 Route::group([
@@ -37,6 +40,11 @@ Route::group([
     Route::post('/login', [AuthController::class, 'clinicLogin']);
     Route::post('/register', [AuthController::class, 'clinicRegister']);
     Route::post('/logout', [AuthController::class, 'clinicLogout']);
+    Route::post('/forgot_password', [AuthController::class, 'clinicForgotPassword']);
+    Route::post('/check_code', [AuthController::class, 'clinicCheckCode']);
+    Route::post('/reset_password', [AuthController::class, 'clinicResetPassword']);
+    Route::post('/request_verify', [AuthController::class, 'clinicRequestVerify']);
+    Route::post('/verify', [AuthController::class, 'clinicVerify']);
 });
 
 Route::group([
@@ -46,4 +54,9 @@ Route::group([
     Route::post('/login', [AuthController::class, 'secretaryLogin']);
     Route::post('/register', [AuthController::class, 'secretaryRegister']);
     Route::post('/logout', [AuthController::class, 'secretaryLogout']);
+    Route::post('/forgot_password', [AuthController::class, 'secretaryForgotPassword']);
+    Route::post('/check_code', [AuthController::class, 'secretaryCheckCode']);
+    Route::post('/reset_password', [AuthController::class, 'secretaryResetPassword']);
+    Route::post('/request_verify', [AuthController::class, 'secretaryRequestVerify']);
+    Route::post('/verify', [AuthController::class, 'secretaryVerify']);
 });
