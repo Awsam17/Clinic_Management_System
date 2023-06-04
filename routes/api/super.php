@@ -23,4 +23,9 @@ Route::group([
     Route::get('/doctors', [DashboardController::class, 'getDoctors']);
     Route::get('/clinics', [DashboardController::class, 'getClinics']);
     Route::get('/users', [DashboardController::class, 'getUsers']);
+    Route::get('/blocked_users', [DashboardController::class, 'blockedUsers']);
+    Route::get('/monthly_statistics', [DashboardController::class, 'monthlyStatistics']);
+    Route::post('/block_user', [DashboardController::class, 'blockUser']);
+    Route::post('/search_clinics', [DashboardController::class, 'searchClinics']);
+    Route::post('/search_users', [DashboardController::class, 'searchUsers']);
 });

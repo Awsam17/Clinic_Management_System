@@ -32,7 +32,6 @@ class User extends Authenticatable implements JWTSubject
     ];
    // protected $guarded = [];
 
-
     public function appoitments() : HasMany
     {
         return $this->hasMany(Appointment::class);

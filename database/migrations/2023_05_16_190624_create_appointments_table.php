@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->nullable();
             $table->foreignId('clinic_id')->nullable();
-            $table->integer('doctor_id')->nullable();
+            $table->foreignId('doctor_id')->nullable();
             $table->string('full_name');
             $table->integer('age');
             $table->string('gender');

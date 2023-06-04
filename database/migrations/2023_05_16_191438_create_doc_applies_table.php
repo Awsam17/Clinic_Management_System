@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('doc_applies', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('doctor_id')->nullable();
-            $table->foreignId('clinic_id')->nullable();
+            $table->foreignId('doctor_id')->nullable()->references('id')->on('doctors')->cascadeOnDelete();
+            $table->foreignId('clinic_id')->nullable()->references('id')->on('clinics')->cascadeOnDelete();
             $table->text('description')->nullable();
             $table->timestamps();
         });

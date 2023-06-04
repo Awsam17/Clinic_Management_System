@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('secretaries', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('clinic_id')->nullable();
+            $table->foreignId('clinic_id')->nullable()->references('id')->on('clinics')->cascadeOnDelete();
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();

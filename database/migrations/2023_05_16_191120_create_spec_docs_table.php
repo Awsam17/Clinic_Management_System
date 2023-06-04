@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('spec_docs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('doctor_id')->nullable();
+            $table->foreignId('doctor_id')->nullable()->references('id')->on('doctors')->cascadeOnDelete();
             $table->string('exp_years');
             $table->foreignId('specialty_id')->nullable();
             $table->timestamps();

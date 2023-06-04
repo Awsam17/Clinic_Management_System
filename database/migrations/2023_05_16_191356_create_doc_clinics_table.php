@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('doc_clinics', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('clinic_id')->nullable();
-            $table->foreignId('doctor_id')->nullable();
+            $table->foreignId('clinic_id')->nullable()->references('id')->on('clinics')->cascadeOnDelete();
+            $table->foreignId('doctor_id')->nullable()->references('id')->on('doctors')->cascadeOnDelete();
             $table->date('join_date');
             $table->date('end_date')->nullable();
             $table->float('price');

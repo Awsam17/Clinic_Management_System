@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ClinicController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -60,3 +61,4 @@ Route::group([
     Route::post('/request_verify', [AuthController::class, 'secretaryRequestVerify']);
     Route::post('/verify', [AuthController::class, 'secretaryVerify']);
 });
+
