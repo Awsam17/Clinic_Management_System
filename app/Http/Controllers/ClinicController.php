@@ -28,6 +28,7 @@ class ClinicController extends Controller
         $apply = Doc_apply::find($request->apply_id);
         $doctor = $apply->doctor;
         $clinic = $apply->clinic;
+        $apply->delete();
         $doctor_clinic = Doc_clinic::create([
             'price' => $request->price,
             'join_date' => $request->join_date,

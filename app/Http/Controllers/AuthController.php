@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Mail\SendCodeResetPassword;
 use App\Mail\SendCodeVerification;
+use App\Models\Address;
 use App\Models\Clinic;
 use App\Models\Doctor;
+use App\Models\Region;
 use App\Models\ResetCodePassword;
 use App\Models\Secretary;
 use App\Models\Spec_doc;
@@ -226,7 +228,10 @@ class AuthController extends Controller
             'password' => 'required|string|min:4',
             'phone' => 'required|string|regex:/^\+?[0-9]{10}$/',
             'image' => 'string',
-            'description' => 'string|max:500'
+            'description' => 'string|max:500',
+            'city_id' => 'required|int',
+            'region_id' => 'required|int',
+            'address' => 'string'
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors()->toJson(), 400);
@@ -235,6 +240,10 @@ class AuthController extends Controller
             $validator->validated(),
             ['password' => bcrypt($request->password)]
         ));
+        $address = Address::create([
+            'address' => $request->address,
+            'region_id' => $request->region_id
+        ]);
         $token = auth('clinic')->attempt($validator->validated());
         return $this->createNewToken($token,'clinic');
     }

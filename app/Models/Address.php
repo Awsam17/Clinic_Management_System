@@ -21,6 +21,6 @@ class Address extends Model
 
     public function clinic() : HasOne
     {
-        return $this->HasOne(Clinic::class , 'clinic_id');
+        return $this->HasOne(Clinic::class );
     }
 }

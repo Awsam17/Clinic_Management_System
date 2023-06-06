@@ -15,6 +15,6 @@ class Specialty extends Model
     protected $table ='specialties';
     public function specialty_doctors() : HasMany
     {
-        return $this->hasMany(Spec_doc::class , 'specialty_id');
+        return $this->hasMany(Spec_doc::class);
     }
 }

@@ -16,7 +16,7 @@ class DoctorController extends Controller
     {
         $user = JWTAuth::parseToken()->authenticate();
         $doctor= $user->doctor;
-        $clinic_id = $request->id;
+        $clinic_id = $_GET['id'];
         $old_apply = Doc_apply::where(['doctor_id' => $doctor->id, 'clinic_id' => $clinic_id])->get();
         if (!$old_apply->isEmpty())
         {
