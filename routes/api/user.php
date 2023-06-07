@@ -29,5 +29,6 @@ Route::group([
     Route::get('/search_clinic_doctors', [UserController::class, 'searchClinicDoctors']);
     Route::get('/search_specialty_doctors', [UserController::class, 'searchSpecialtyDoctors']);
     Route::get('/doctor/profile_in_clinic', [UserController::class, 'doctorProfileInClinic']);
+    Route::get('/doctor/available_times', [UserController::class, 'availableTimes']);
 });
 

@@ -28,7 +28,6 @@ class ClinicController extends Controller
         $apply = Doc_apply::find($request->apply_id);
         $doctor = $apply->doctor;
         $clinic = $apply->clinic;
-        $apply->delete();
         $doctor_clinic = Doc_clinic::create([
             'price' => $request->price,
             'join_date' => $request->join_date,
@@ -43,10 +42,12 @@ class ClinicController extends Controller
             $times =[];
             for ($i=$time['start'] ; $i< $time['end'] ; $i++)
             {
-                array_push($times,$i . ':00');
-                array_push($times,$i . ':30');
+                array_push($times,strval($i) . ":00");
+                array_push($times,strval($i) . ":30");
             }
-            $json_times = json_encode($times);
+            //$valuesArray = array_values($times);
+           $json_times = json_encode($times);
+//            $times2 = json_decode(stripslashes($json_times));
             $worked_time = Worked_time::create([
                 'day' => $time['day'],
                 'start' => $time['start'],
@@ -59,6 +60,7 @@ class ClinicController extends Controller
 
         $clinic->num_of_doctors++;
         $clinic->save();
+        $apply->delete();
         return $this->apiResponse(null,'Done !','200');
     }
 }

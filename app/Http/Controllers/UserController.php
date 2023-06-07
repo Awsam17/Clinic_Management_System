@@ -265,5 +265,20 @@ class UserController extends Controller
         return $this->apiResponse(null, 'no results !', 404);
     }
 
+    public function availableTimes()
+    {
+        $clinic_id = $_GET['clinic_id'];
+        $doctor_id = $_GET['doctor_id'];
+        $available_times = Worked_time::where([
+            ['doctor_id', '=', $doctor_id],
+            ['clinic_id', '=', $clinic_id]
+        ])->select('day','av_times')->get();
+
+        foreach ($available_times as $time) {
+            $time->av_times = json_decode($time->av_times);
+        }
+
+        return $this->apiResponse($available_times, "Available times has been got successfully !", 200);
+    }
 
 }
