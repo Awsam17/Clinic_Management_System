@@ -2,17 +2,35 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Clinic;
 use App\Models\Doc_apply;
 use App\Models\Doc_clinic;
 use App\Models\Doctor;
 use App\Models\Worked_time;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class ClinicController extends Controller
 {
     use ApiResponseTrait;
+
+    public function profile()
+    {
+        $id = $_GET['id'];
+        $clinic = Clinic::query()
+            ->join('addresses', 'addresses.id', '=', 'clinics.address_id')
+            ->join('regions', 'addresses.region_id', '=', 'regions.id')
+            ->join('cities', 'regions.city_id', '=', 'cities.id')
+            ->select('clinics.id','clinics.name','clinics.phone','clinics.description','clinics.image','clinics.email','clinics.num_of_doctors AS number_of_doctors',DB::raw('clinics.total_of_rate / clinics.num_of_rate AS rate'), 'addresses.address', 'regions.region', 'cities.city')
+            ->where('clinics.id',$id)
+            ->get();
+        return $this->apiResponse($clinic,'ok !',200);
+    }
+
+
+
 
     public function approveDoctor(Request $request)
     {
@@ -63,4 +81,6 @@ class ClinicController extends Controller
         $apply->delete();
         return $this->apiResponse(null,'Done !','200');
     }
+
+
 }

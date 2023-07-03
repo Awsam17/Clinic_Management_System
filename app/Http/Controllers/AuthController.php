@@ -29,7 +29,7 @@ class AuthController extends Controller
 
     public function __construct() {
         $this->middleware('auth:user')->only(['userLogout']);
-        $this->middleware('auth:clinic')->only(['clinicLogout']);
+        $this->middleware('auth:clinic')->only(['clinicLogout','secretaryRegister']);
         $this->middleware('auth:secretary')->only(['secretaryLogout']);
     }
 
@@ -68,8 +68,9 @@ class AuthController extends Controller
             $validator->validated(),
             ['password' => bcrypt($request->password)]
         ));
-        $token = auth('user')->attempt($validator->validated());
-        return $this->createNewToken($token,'user');
+//        $token = auth('user')->attempt($validator->validated());
+//        return $this->createNewToken($token,'user');
+        return $this->apiResponse(null,'created successfully waiting for verify !',200);
     }
 
 
@@ -101,8 +102,7 @@ class AuthController extends Controller
             $specialty->specialty_doctors()->save($spec_doc);
         }
 
-        $token = auth('user')->attempt($request->only('email','password'));
-        return $this->createNewToken($token,'user');
+        return $this->apiResponse(null,'created successfully waiting for verify !',200);
     }
 
     public function userLogout() {
@@ -202,14 +202,6 @@ class AuthController extends Controller
         return $this->apiResponse($data,'user successfully verified !',200);
     }
 
-    public function refresh() {
-       // return $this->createNewToken(auth('user')->refresh());
-    }
-
-    public function userProfile() {
-        return response()->json(auth('user')->user());
-    }
-
     protected function createNewToken($token,$guard){
         $user = auth($guard)->user();
         $user['token'] = $token;
@@ -229,9 +221,6 @@ class AuthController extends Controller
             'phone' => 'required|string|regex:/^\+?[0-9]{10}$/',
             'image' => 'string',
             'description' => 'string|max:500',
-            'city_id' => 'required|int',
-            'region_id' => 'required|int',
-            'address' => 'string'
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors()->toJson(), 400);
@@ -244,8 +233,9 @@ class AuthController extends Controller
             'address' => $request->address,
             'region_id' => $request->region_id
         ]);
-        $token = auth('clinic')->attempt($validator->validated());
-        return $this->createNewToken($token,'clinic');
+        $clinic->address_id = $address->id;
+        $clinic->save();
+        return $this->apiResponse(null,'created successfully waiting for verify !',200);
     }
 
     public function clinicLogin(Request $request){
@@ -369,16 +359,16 @@ class AuthController extends Controller
             'name' => 'required|string|between:2,100',
             'email' => 'required|string|email|max:100|unique:secretaries',
             'password' => 'required|string|min:4',
+            'clinic_id' => 'required|exists:clinics,id'
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors()->toJson(), 400);
         }
-        $secretary = Secretary::create(array_merge(
+        Secretary::create(array_merge(
             $validator->validated(),
             ['password' => bcrypt($request->password)]
         ));
-        $token = auth('secretary')->attempt($validator->validated());
-        return $this->createNewToken($token,'secretary');
+        return $this->apiResponse(null , 'created successfully !' , 200 );
     }
 
     public function secretaryLogin(Request $request){
@@ -463,34 +453,6 @@ class AuthController extends Controller
         $reset->delete();
 
         return $this->apiResponse(null,'password successfully reset !',200);
-    }
-
-    public function secretaryRequestVerify(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email'
-        ]);
-        $code = mt_rand(100000,999999);
-        Secretary::query()->where('email',$request->email)->update(['code'=>$code]);
-        Mail::to($request->email)->send(new SendCodeVerification($code));
-
-        return $this->apiResponse(null,'email sent successfully !',200);
-    }
-
-    public function secretaryVerify(Request $request)
-    {
-        $request->validate([
-            'code' => 'required|exists:secretaries|string',
-        ]);
-        $secretary = Secretary::where('code',$request->code)->first();
-        $secretary->email_verified_at = Carbon::now();
-        $secretary->save();
-        $token = auth('secretary')->login($secretary);
-        $data = [
-            'user' => $secretary,
-            'token' => $token
-        ];
-        return $this->apiResponse($data,'secretary successfully verified !',200);
     }
 
 }

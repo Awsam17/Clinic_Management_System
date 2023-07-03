@@ -20,9 +20,10 @@ return new class extends Migration
             $table->string('full_name');
             $table->integer('age');
             $table->string('gender');
+            $table->date('date');
+            $table->string('time')->nullable();
             $table->text('description')->nullable();
             $table->boolean('hide_user')->default(0);
-            $table->date('date');
             $table->enum('status', ['archived', 'pending', 'booked'])->default('pending');
             $table->float('price')->nullable();
             $table->timestamps();

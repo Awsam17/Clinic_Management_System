@@ -30,5 +30,8 @@ Route::group([
     Route::get('/search_specialty_doctors', [UserController::class, 'searchSpecialtyDoctors']);
     Route::get('/doctor/profile_in_clinic', [UserController::class, 'doctorProfileInClinic']);
     Route::get('/doctor/available_times', [UserController::class, 'availableTimes']);
+    Route::get('/incoming_apps', [UserController::class, 'incomingApps']);
+    Route::get('/booked_apps', [UserController::class, 'bookedApps']);
+    Route::get('/archived_apps', [UserController::class, 'archivedApps']);
 });
 

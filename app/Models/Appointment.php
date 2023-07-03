@@ -24,7 +24,8 @@ class Appointment extends Model
         'description',
         'hide_user',
         'date',
-        'status'
+        'status',
+        'time'
     ];
 
     public function user() : BelongsTo

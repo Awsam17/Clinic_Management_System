@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Appointment;
 use App\Models\Clinic;
 use App\Models\Doctor;
 use App\Models\Spec_doc;
@@ -9,14 +10,40 @@ use App\Models\Specialty;
 use App\Models\User;
 use App\Models\Worked_time;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use PHPUnit\Framework\MockObject\Api;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class UserController extends Controller
 {
     use ApiResponseTrait;
+
+    public function profile()
+    {
+        $id = $_GET['id'];
+        $user = User::find($id);
+
+        return $this->apiResponse($user , 'user profile get successfully' , 200);
+    }
+
+    public function edit(Request $request)
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|between:2,100',
+            'phone' => 'required|string|regex:/^\+?[0-9]{10}$/',
+            'image' => 'string',
+            'gender' => 'required|string',
+        ]);
+        $user->update(array_merge(
+            $validator->validated()
+        ));
+        return $this->apiResponse(null,'data updated successfully !',200);
+    }
 
     public function home()
     {
@@ -41,7 +68,11 @@ class UserController extends Controller
 
     public function getClinics()
     {
-        $clinics = Clinic::all();
+
+        $clinics = Clinic::query()->join('addresses','addresses.id','=','clinics.address_id')
+        ->join('regions','regions.id','=','addresses.region_id')
+        ->join('cities','cities.id','=','regions.city_id')
+        ->select('clinics.*','cities.city','regions.region','addresses.address')->get();
         return $this->apiResponse($clinics, 'all clinic has been got successfully !', 200);
     }
 
@@ -104,6 +135,18 @@ class UserController extends Controller
             return $this->apiResponse($doctors_data, 'doctors has been got successfully !', 200);
         }
         return $this->apiResponse(null, 'no results !', 404);
+    }
+
+    public function clinicProfile(){
+        $id = $_GET['id'];
+        $clinic = Clinic::query()
+            ->join('addresses', 'addresses.id', '=', 'clinics.address_id')
+            ->join('regions', 'addresses.region_id', '=', 'regions.id')
+            ->join('cities', 'regions.city_id', '=', 'cities.id')
+            ->select('clinics.id','clinics.name','clinics.phone','clinics.description','clinics.image','clinics.email','clinics.num_of_doctors AS number_of_doctors',DB::raw('clinics.total_of_rate / clinics.num_of_rate AS rate'), 'addresses.address', 'regions.region', 'cities.city')
+            ->where('clinics.id',$id)
+            ->get();
+        return $this->apiResponse($clinic,'ok ',200);
     }
 
     public function doctorProfile()
@@ -279,6 +322,76 @@ class UserController extends Controller
         }
 
         return $this->apiResponse($available_times, "Available times has been got successfully !", 200);
+    }
+
+    public function makeApp(Request $request)
+    {
+        $request->validate([
+            'full_name' => 'string|max:30',
+            'age' => 'required|int',
+            'description' => 'max:100'
+        ]);
+        $request['user_id'] = JWTAuth::parseToken()->authenticate()->id;
+
+        $currentDay = Carbon::now()->dayOfWeek;
+
+        $requestedDay = $request->day;
+
+        $daysDifference = ($requestedDay - $currentDay + 7) % 7;
+
+        if ($requestedDay > 7) {
+            return $this->apiResponse(null,'Making appointment failed !',400);
+        }
+
+        $dateOfRequestedDay = Carbon::now()->addDays($daysDifference)->format('Y.m.d');
+        $request['date'] = $dateOfRequestedDay;
+        Appointment::create($request->all());
+        return $this->apiResponse(null,'Making appointment succeeded !',200);
+    }
+
+    public function archivedApps()
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+        $archived_apps = $user->appointments()->where('status', 'archived')->get();
+        if ($archived_apps->isEmpty())
+        {
+            return $this->apiResponse(null,'No archived appointments found !',200);
+        }
+        return $this->apiResponse($archived_apps,'Done !',200);
+    }
+
+    public function bookedApps()
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+        $booked_apps = $user->appointments()->where('status','booked')->get();
+        if ($booked_apps->isEmpty())
+        {
+            return $this->apiResponse(null,'No booked appointments found !',200);
+        }
+//        $archived_apps = User::query()
+//            ->join('appointments','appointments.user_id','=', 'users.id')
+//            ->where('users.id','=',)
+//            ->where('appointments.status','=','archived')
+//            ->select('appointments.*')
+//            ->get();
+        return $this->apiResponse($booked_apps,'Done !',200);
+    }
+
+    public function incomingApps()
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+        $incoming_apps = $user->appointments()->where('status','incoming')->get();
+        if ($incoming_apps->isEmpty())
+        {
+            return $this->apiResponse(null,'No incoming appointments found !',200);
+        }
+//        $archived_apps = User::query()
+//            ->join('appointments','appointments.user_id','=', 'users.id')
+//            ->where('users.id','=',)
+//            ->where('appointments.status','=','archived')
+//            ->select('appointments.*')
+//            ->get();
+        return $this->apiResponse($incoming_apps,'Done !',200);
     }
 
 }
