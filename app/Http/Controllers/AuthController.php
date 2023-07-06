@@ -238,6 +238,8 @@ class AuthController extends Controller
         return $this->apiResponse(null,'created successfully waiting for verify !',200);
     }
 
+
+
     public function clinicLogin(Request $request){
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',

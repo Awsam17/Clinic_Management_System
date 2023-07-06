@@ -10,7 +10,6 @@ class Doc_clinic extends Model
 {
     use HasFactory;
     protected $guarded = [];
-
     public function doctor() : BelongsTo
     {
         return $this->BelongsTo(Doctor::class,'doctor_id');

@@ -20,5 +20,13 @@ Route::group([
     'middleware' => 'api',
     'prefix' => 'clinic'
 ], function ($router) {
+    Route::get('/get_regions' , [ClinicController::class , 'getRegions']);
+    Route::get('/profile', [ClinicController::class, 'profile']);
     Route::post('/approve_doctor', [ClinicController::class, 'approveDoctor']);
+    Route::get('/applications', [ClinicController::class, 'applications']);
+    Route::get('/requests', [ClinicController::class, 'requests']);
+    Route::get('/doctors', [ClinicController::class, 'doctors']);
+    Route::get('/patients', [ClinicController::class, 'patients']);
+    Route::post('/delete_patient', [ClinicController::class, 'deletePatient']);
+    Route::get('/overview', [ClinicController::class, 'statistics']);
 });

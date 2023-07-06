@@ -2,19 +2,87 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Appointment;
+use App\Models\City;
 use App\Models\Clinic;
 use App\Models\Doc_apply;
 use App\Models\Doc_clinic;
 use App\Models\Doctor;
+use App\Models\Medical_report;
+use App\Models\Patient;
+use App\Models\Region;
+use App\Models\Secretary;
+use App\Models\Specialty;
 use App\Models\Worked_time;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use PhpParser\Comment\Doc;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class ClinicController extends Controller
 {
     use ApiResponseTrait;
+
+    public function statistics()
+    {
+        $clinic = JWTAuth::parseToken()->authenticate();
+        $patients_count = Patient::query()
+            ->join('medical_reports','patients.id','medical_reports.patient_id')
+            ->where('medical_reports.clinic_id',$clinic->id)
+            ->distinct('medical_reports.patient_id')
+            ->count();
+        if($patients_count==0){
+            $male_ratio = 50;
+            $female_ratio = 50;
+        }
+        else{
+            $male_ratio = (int)(Patient::query()
+                ->join('medical_reports','patients.id','medical_reports.patient_id')
+                ->where('medical_reports.clinic_id',$clinic->id)
+                ->where('patients.gender','male')
+                ->distinct('medical_reports.patient_id')
+                ->count()/$patients_count*100);
+            $female_ratio = 100-$male_ratio;
+        }
+        $profits = Appointment::query()
+            ->where('clinic_id',$clinic->id)
+            ->where('status','archived')
+            ->sum('price');
+        $startOfMonth = Carbon::now()->startOfMonth()->subMonth();
+        $endOfMonth = Carbon::now()->startOfMonth()->subDay();
+        $month_profits = Appointment::query()
+            ->where('clinic_id',$clinic->id)
+            ->where('status','archived')
+            ->whereBetween('updated_at',[$startOfMonth,$endOfMonth])
+            ->sum('price');
+        $appointments_count = Appointment::query()
+            ->where('clinic_id',$clinic->id)
+            ->where('status','archived')
+            ->count();
+        $month_appointment = Appointment::query()
+            ->where('clinic_id',$clinic->id)
+            ->where('status','archived')
+            ->whereBetween('updated_at',[$startOfMonth,$endOfMonth])
+            ->count();
+        $doctors_count = Doc_clinic::query()
+            ->where('clinic_id',$clinic->id)
+            ->count();
+        $secretaries_count = Secretary::where('clinic_id',$clinic->id)->count();
+        $data = [
+          'patients count' => $patients_count,
+          'male ratio' => $male_ratio,
+          'female ratio' => $female_ratio,
+          'profits' => $profits,
+          'last month profits' => $month_profits,
+          'appointments count' => $appointments_count,
+          'last month appointments' => $month_appointment,
+          'doctors count' => $doctors_count,
+          'secretaries count' => $secretaries_count
+        ];
+        return $this->apiResponse($data,'Statistics returned successfully !',200);
+    }
 
     public function profile()
     {
@@ -28,9 +96,6 @@ class ClinicController extends Controller
             ->get();
         return $this->apiResponse($clinic,'ok !',200);
     }
-
-
-
 
     public function approveDoctor(Request $request)
     {
@@ -82,5 +147,147 @@ class ClinicController extends Controller
         return $this->apiResponse(null,'Done !','200');
     }
 
+    public function getRegions()
+    {
+        $name = $_GET['name'];
+        $regions = Region::query()
+            ->join('cities','cities.id','regions.city_id')
+            ->where('cities.city',$name)
+            ->select('regions.id AS region_id','regions.region')
+            ->get();
+        if($regions->isEmpty())
+        {
+            return $this->apiResponse(null,'no results',200);
+        }
+        return $this->apiResponse($regions,'Regions has been got successfully',200);
+    }
+
+    public function applications()
+    {
+        $clinic = JWTAuth::parseToken()->authenticate();
+        $apps = Doc_apply::query()
+            ->join('clinics','clinics.id','doc_applies.clinic_id')
+            ->join('doctors','doctors.id','doc_applies.doctor_id')
+            ->join('users','users.id','doctors.user_id')
+            ->where('clinics.id',$clinic->id)
+            ->select('doc_applies.id AS apply_id','users.name AS Doctor Name','users.email AS Doctor Email','doctors.address')
+            ->get();
+        if ($apps->isEmpty())
+        {
+            return $this->apiResponse(null,'no applications found !',404);
+        }
+        return $this->apiResponse($apps,'Applications returned successfully !',200);
+    }
+
+    public function requests()
+    {
+        $clinic = JWTAuth::parseToken()->authenticate();
+        $reqs = Appointment::query()
+            ->join('clinics','clinics.id','appointments.clinic_id')
+            ->join('doctors','doctors.id','appointments.doctor_id')
+            ->join('users','users.id','doctors.user_id')
+            ->where('clinics.id',$clinic->id)
+            ->where('appointments.status','pending')
+            ->select('appointments.full_name AS Patient Name','appointments.age','appointments.description','appointments.date','users.name AS Doctor Name')
+            ->get();
+        if ($reqs->isEmpty())
+        {
+            return $this->apiResponse(null,'no requests found !',404);
+        }
+        return $this->apiResponse($reqs,'Requests returned successfully !',200);
+    }
+
+    public function doctors()
+    {
+        $clinic = JWTAuth::parseToken()->authenticate();
+        $doctors = Doctor::query()
+            ->join('doc_clinics','doctors.id','doc_clinics.doctor_id')
+            ->where('doc_clinics.clinic_id',$clinic->id)
+            ->select('doctors.*')
+            ->get();
+        if ($doctors->isEmpty())
+        {
+            return $this->apiResponse(null,'no doctors found !',404);
+        }
+        $data = [] ;
+        foreach ($doctors as $doctor)
+        {
+            $user = $doctor->user;
+            $specialties = Specialty::query()
+                ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
+                ->where('spec_docs.doctor_id', '=', $doctor->id)
+                ->select('name AS specialty','exp_years AS experience_years')
+                ->get();
+            $worked_times = Worked_time::where([
+                ['doctor_id', '=', $doctor->id],
+                ['clinic_id', '=', $clinic->id]
+            ])->select('day','start','end')->get();
+            $conract = Doc_clinic::query()
+                ->where('doctor_id',$doctor->id)
+                ->where('clinic_id',$clinic->id)
+                ->first();
+            $data[] = [
+                'id' => $doctor->id,
+                'name' => $user->name,
+                'phone' => $user->phone,
+                'image' => $user->image,
+                'gender' => $user->gender,
+                'address' => $doctor->address,
+                'price' => $conract->price,
+                'join_date' => $conract->join_date,
+                'end_date' => $conract->end_date,
+                'specialties' => $specialties,
+                'worked_times' => $worked_times,
+            ];
+        }
+        return $this->apiResponse($data,'Doctors returned successfully !',200);
+    }
+
+    public function patients()
+    {
+        $clinic = JWTAuth::parseToken()->authenticate();
+        $patients = Patient::query()
+            ->join('medical_reports','patients.id','medical_reports.patient_id')
+            ->where('medical_reports.clinic_id',$clinic->id)
+            ->select('patients.*')
+            ->distinct('patients.id')
+            ->get();
+        if ($patients->isEmpty())
+        {
+            return $this->apiResponse(null,'no patients found !',404);
+        }
+        $data = [];
+        foreach ($patients as $patient)
+        {
+            $medical_reports = Medical_report::query()
+                ->where('patient_id',$patient->id)
+                ->where('clinic_id',$clinic->id)
+                ->select('name','specialty','description')
+                ->get();
+            $data[] = [
+                'id' => $patient->id,
+                'full_name' => $patient->full_name,
+                'mother_name' => $patient->mother_name,
+                'age' => $patient->age,
+                'gender' => $patient->gender,
+                'address' => $patient->address,
+                'blood_type' => $patient->blood_type,
+                'description' => $patient->description,
+                'phone' => $patient->phone,
+                'medical_reports' => $medical_reports
+            ];
+        }
+        return $this->apiResponse($data,'Patients returned successfully !',200);
+    }
+
+    public function deletePatient()
+    {
+        $id = $_GET['id'];
+        $patient = Patient::find($id);
+        if($patient==null)
+            return $this->apiResponse(null,'Patient not exist !',200);
+        $patient->delete();
+        return $this->apiResponse(null,'Patient deleted successfully !',200);
+    }
 
 }

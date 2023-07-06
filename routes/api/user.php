@@ -25,6 +25,7 @@ Route::group([
     Route::get('/specialty/doctors', [UserController::class, 'getSpecialtyDoctors']);
     Route::get('/clinic/doctors', [UserController::class, 'getClinicDoctors']);
     Route::get('/doctor/profile', [UserController::class, 'doctorProfile']);
+    Route::get('/clinic/profile', [UserController::class, 'clinicProfile']);
     Route::get('/search_clinics', [UserController::class, 'searchClinics']);
     Route::get('/search_clinic_doctors', [UserController::class, 'searchClinicDoctors']);
     Route::get('/search_specialty_doctors', [UserController::class, 'searchSpecialtyDoctors']);
@@ -33,5 +34,8 @@ Route::group([
     Route::get('/incoming_apps', [UserController::class, 'incomingApps']);
     Route::get('/booked_apps', [UserController::class, 'bookedApps']);
     Route::get('/archived_apps', [UserController::class, 'archivedApps']);
+    Route::post('/make_app', [UserController::class, 'makeApp']);
+    Route::get('/profile', [UserController::class, 'profile']);
+    Route::post('/edit_profile', [UserController::class, 'edit']);
 });
 

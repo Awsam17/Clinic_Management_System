@@ -20,5 +20,7 @@ Route::group([
     'prefix' => 'doctor'
 ], function ($router) {
     Route::post('/apply', [DoctorController::class, 'apply']);
+    Route::get('/profile', [DoctorController::class, 'doctor_profile']);
+    Route::post('/edit_profile', [DoctorController::class, 'doctor_edit']);
 });
 
