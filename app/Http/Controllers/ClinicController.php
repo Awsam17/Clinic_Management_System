@@ -188,6 +188,7 @@ class ClinicController extends Controller
             ->join('users','users.id','doctors.user_id')
             ->where('clinics.id',$clinic->id)
             ->where('appointments.status','pending')
+            ->orderBy('appointments.date','asc')
             ->select('appointments.full_name AS Patient Name','appointments.age','appointments.description','appointments.date','users.name AS Doctor Name')
             ->get();
         if ($reqs->isEmpty())
