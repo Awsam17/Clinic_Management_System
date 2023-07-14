@@ -71,7 +71,6 @@ class UserController extends Controller
 
     public function getClinics()
     {
-
         $clinics = Clinic::query()->join('addresses','addresses.id','=','clinics.address_id')
         ->join('regions','regions.id','=','addresses.region_id')
         ->join('cities','cities.id','=','regions.city_id')

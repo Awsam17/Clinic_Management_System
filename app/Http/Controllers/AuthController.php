@@ -195,11 +195,12 @@ class AuthController extends Controller
         $user->email_verified_at = Carbon::now();
         $user->save();
         $token = auth('user')->login($user);
-        $data = [
-            'user' => $user,
-            'token' => $token
-        ];
-        return $this->apiResponse($data,'user successfully verified !',200);
+        $user['token'] = $token;
+//        $data = [
+//            'user' => $user,
+//            'token' => $token
+//        ];
+        return $this->apiResponse($user,'user successfully verified !',200);
     }
 
     protected function createNewToken($token,$guard){
@@ -345,11 +346,13 @@ class AuthController extends Controller
         $clinic->email_verified_at = Carbon::now();
         $clinic->save();
         $token = auth('clinic')->login($clinic);
-        $data = [
-            'user' => $clinic,
-            'token' => $token
-        ];
-        return $this->apiResponse($data,'clinic successfully verified !',200);
+
+        $clinic['token'] = $token;
+//        $data = [
+//            'user' => $clinic,
+//            'token' => $token
+//        ];
+        return $this->apiResponse($clinic,'clinic successfully verified !',200);
     }
 
     /// Scretary auth !!!!!
