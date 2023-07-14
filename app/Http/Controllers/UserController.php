@@ -55,7 +55,10 @@ class UserController extends Controller
 
         $specialties = Specialty::all();
 
-        $clinics = Clinic::all();
+        $clinics = Clinic::query()->join('addresses','addresses.id','=','clinics.address_id')
+            ->join('regions','regions.id','=','addresses.region_id')
+            ->join('cities','cities.id','=','regions.city_id')
+            ->select('clinics.*','cities.city','regions.region','addresses.address')->get();
 
         $data = [
             'user' => $user_data,
