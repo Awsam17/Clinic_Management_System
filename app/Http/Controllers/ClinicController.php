@@ -286,9 +286,36 @@ class ClinicController extends Controller
         $id = $_GET['id'];
         $patient = Patient::find($id);
         if($patient==null)
-            return $this->apiResponse(null,'Patient not exist !',200);
+            return $this->apiResponse(null,'Patient not exist !',404);
         $patient->delete();
         return $this->apiResponse(null,'Patient deleted successfully !',200);
     }
+
+    public function secretaries()
+    {
+        $clinic = JWTAuth::parseToken()->authenticate();
+        $secretaries = Secretary::query()
+            ->where('clinic_id',$clinic->id)
+            ->select('id','name','email')
+            ->get();
+        if($secretaries->isEmpty())
+            return $this->apiResponse(null,'No secretaries found !',404);
+        return $this->apiResponse($secretaries,'Secretaries returned successfully !',200);
+    }
+
+    public function deleteSec()
+    {
+        $clinic = JWTAuth::parseToken()->authenticate();
+        $id = $_GET['id'];
+        if (Secretary::where('clinic_id',$clinic->id)->where('id',$id)->delete()==0)
+            return $this->apiResponse(null,'Secretary not found !',200);
+        return $this->apiResponse(null,'Secretary deleted successfully !',200);
+    }
+
+    public function appointments()
+    {
+
+    }
+
 
 }
