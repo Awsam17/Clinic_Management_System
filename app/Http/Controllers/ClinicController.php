@@ -94,6 +94,9 @@ class ClinicController extends Controller
             ->select('clinics.id','clinics.name','clinics.phone','clinics.description','clinics.image','clinics.email','clinics.num_of_doctors AS number_of_doctors',DB::raw('clinics.total_of_rate / clinics.num_of_rate AS rate'), 'addresses.address', 'regions.region', 'cities.city')
             ->where('clinics.id',$id)
             ->get();
+
+        if($clinic->isEmpty())
+            return $this->apiResponse(null,'some thing wrong !',404);
         return $this->apiResponse($clinic,'ok !',200);
     }
 
@@ -162,6 +165,7 @@ class ClinicController extends Controller
         return $this->apiResponse($regions,'Regions has been got successfully',200);
     }
 
+    //طلبات انتساب الدكاترة
     public function applications()
     {
         $clinic = JWTAuth::parseToken()->authenticate();
@@ -179,6 +183,7 @@ class ClinicController extends Controller
         return $this->apiResponse($apps,'Applications returned successfully !',200);
     }
 
+    // طلبات الحجز من المرضى التي لم تقبل او ترفض بعد
     public function requests()
     {
         $clinic = JWTAuth::parseToken()->authenticate();
@@ -188,14 +193,34 @@ class ClinicController extends Controller
             ->join('users','users.id','doctors.user_id')
             ->where('clinics.id',$clinic->id)
             ->where('appointments.status','pending')
-            ->orderBy('appointments.date','asc')
-            ->select('appointments.full_name AS Patient Name','appointments.age','appointments.description','appointments.date','users.name AS Doctor Name')
+            ->orderBy('appointments.date', 'asc')
+            ->orderBy('appointments.created_at', 'asc')
+            ->select('appointments.full_name AS Patient Name','appointments.age','appointments.description','appointments.date' , 'appointments.time' ,'users.name AS Doctor Name')
             ->get();
         if ($reqs->isEmpty())
         {
             return $this->apiResponse(null,'no requests found !',404);
         }
         return $this->apiResponse($reqs,'Requests returned successfully !',200);
+    }
+
+    public function ApprovedAppointments()
+    {
+        $clinic = JWTAuth::parseToken()->authenticate();
+        $reqs = Appointment::query()
+            ->join('clinics','clinics.id','appointments.clinic_id')
+            ->join('doctors','doctors.id','appointments.doctor_id')
+            ->join('users','users.id','doctors.user_id')
+            ->where('clinics.id',$clinic->id)
+            ->where('appointments.status','booked')
+            ->orderBy('appointments.date', 'asc')
+            ->select('appointments.full_name AS Patient Name','appointments.age','appointments.description','appointments.date' ,'appointments.time','users.name AS Doctor Name')
+            ->get();
+        if ($reqs->isEmpty())
+        {
+            return $this->apiResponse(null,'no appointment  found !',404);
+        }
+        return $this->apiResponse($reqs,'Appointments returned successfully !',200);
     }
 
     public function doctors()

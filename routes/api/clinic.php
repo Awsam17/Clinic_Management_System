@@ -31,4 +31,5 @@ Route::group([
     Route::get('/overview', [ClinicController::class, 'statistics']);
     Route::get('/secretaries', [ClinicController::class, 'secretaries']);
     Route::post('/delete_secretary', [ClinicController::class, 'deleteSec']);
+    Route::get('/approved_appointments', [ClinicController::class, 'ApprovedAppointments']);
 });
