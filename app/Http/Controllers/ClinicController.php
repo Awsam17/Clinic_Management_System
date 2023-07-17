@@ -16,6 +16,7 @@ use App\Models\Specialty;
 use App\Models\Worked_time;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use PhpParser\Comment\Doc;
@@ -345,6 +346,42 @@ class ClinicController extends Controller
         if ($doc_apply == 0)
             return $this->apiResponse(null , 'Some thing went wrong!' , 400);
         return $this->apiResponse(null , 'Doctor apply has beed rejected' , 200);
+    }
+
+    public function rejectAppointment()
+    {
+        $clinic = JWTAuth::parseToken()->authenticate();
+        $appointment_id = $_GET['id'];
+        $delete_app = Appointment::where(['id' => $appointment_id , 'clinic_id'=>$clinic->id , 'status' => 'pending'])->delete();
+        if ($delete_app == 0)
+            return $this->apiResponse(null , 'Some thing went wrong!' , 400);
+        return $this->apiResponse(null , 'Appointment has beed rejected successfully' , 200);
+    }
+
+    public function deleteAppointment()
+    {
+        $clinic = JWTAuth::parseToken()->authenticate();
+        $appointment_id = $_GET['id'];
+        $delete_app = Appointment::where(['id' => $appointment_id , 'clinic_id'=>$clinic->id , 'status' => 'booked'])->delete();
+        if ($delete_app == 0)
+            return $this->apiResponse(null , 'Some thing went wrong!' , 400);
+        return $this->apiResponse(null , 'Appointment has beed deleted successfully' , 200);
+    }
+
+    public function appreveAppointment()
+    {
+        $clinic = JWTAuth::parseToken()->authenticate();
+        $appointment_id = $_GET['id'];
+        $appointment = Appointment::find($appointment_id);
+        $same_time_app = Appointment::query()
+            ->where([ 'clinic_id' => $appointment->clinic_id , 'doctor_id' => $appointment->doctor_id ,'date' => $appointment->date , 'time' => $appointment->time , 'status' => 'booked'])->get();
+
+        if (!$same_time_app->isEmpty())
+            return $this->apiResponse(null , "This time isn't available, there is another appointment at the same time" , 400);
+
+        $appointment['status'] = 'booked';
+        $appointment->save();
+        return $this->apiResponse(null , "Appointment has been approved successfully!");
     }
 
     public function appointments()
