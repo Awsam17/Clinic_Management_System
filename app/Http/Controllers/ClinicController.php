@@ -337,6 +337,16 @@ class ClinicController extends Controller
         return $this->apiResponse(null,'Secretary deleted successfully !',200);
     }
 
+    public function rejectDoctor()
+    {
+        $clinic = JWTAuth::parseToken()->authenticate();
+        $doctor_id = $_GET['id'];
+        $doc_apply = Doc_apply::where(['clinic_id'=>$clinic->id , 'doctor_id'=>$doctor_id])->delete();
+        if ($doc_apply == 0)
+            return $this->apiResponse(null , 'Some thing went wrong!' , 400);
+        return $this->apiResponse(null , 'Doctor apply has beed rejected' , 200);
+    }
+
     public function appointments()
     {
 

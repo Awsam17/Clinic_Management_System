@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Clinic;
 use App\Models\Doc_apply;
+use App\Models\Doc_clinic;
 use App\Models\Doctor;
 use App\Models\Spec_doc;
 use App\Models\Specialty;
@@ -24,7 +25,8 @@ class DoctorController extends Controller
         $doctor= $user->doctor;
         $clinic_id = $_GET['id'];
         $old_apply = Doc_apply::where(['doctor_id' => $doctor->id, 'clinic_id' => $clinic_id])->get();
-        if (!$old_apply->isEmpty())
+        $is_doctor = Doc_clinic::where(['doctor_id' => $doctor->id , 'clinic_id' => $clinic_id])->get();
+        if (!$old_apply->isEmpty() || !$is_doctor->isEmpty())
         {
             return $this->apiResponse(null,'you already applied','200');
         }
