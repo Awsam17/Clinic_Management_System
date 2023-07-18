@@ -117,6 +117,7 @@ class UserController extends Controller
         $doctors = Doctor::query()
             ->join('doc_clinics', 'doctors.id', '=', 'doc_clinics.doctor_id')
             ->where('doc_clinics.clinic_id', '=', $clinic_id)
+            ->select('doctors.*')
             ->get();
         foreach ($doctors as $doctor) {
             $data = $doctor->user;
