@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('mother_name');
             $table->string('phone');
             $table->integer('age');
+            $table->integer('clinic_id');
             $table->string('gender');
             $table->string('address');
             $table->string('blood_type')->nullable();

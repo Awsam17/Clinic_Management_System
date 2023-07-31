@@ -36,4 +36,5 @@ Route::group([
     Route::post('/reject_appointment', [ClinicController::class, 'rejectAppointment']);
     Route::post('/delete_appointment', [ClinicController::class, 'deleteAppointment']);
     Route::post('/approve_appointment', [ClinicController::class, 'appreveAppointment']);
+    Route::get('/monthly_statistics', [ClinicController::class, 'monthlyStatistics']);
 });

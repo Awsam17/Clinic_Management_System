@@ -53,7 +53,7 @@ class AuthController extends Controller
             'email' => 'required|string|email|max:100|unique:users',
             'password' => 'required|string|min:4',
             'phone' => 'required|string|regex:/^\+?[0-9]{10}$/',
-            'image' => 'string',
+            'image' => 'file|mimes:jpg,jpeg',
             'gender' => 'string|required',
             'is_doctor' => 'boolean',
         ]);
@@ -64,10 +64,22 @@ class AuthController extends Controller
         {
             return $this->apiResponse(null,'data validated successfully !',202);
         }
+
+        $file_ex = $request['image']-> getClientOriginalExtension();
+        $file_name = time().'.'.$file_ex;
+        $file_path = 'images';
+        $request->image -> move($file_path , $file_name);
+
+        $userData = $validator->validated();
+        unset($userData['image']);
+
         $user = User::create(array_merge(
-            $validator->validated(),
+            $userData,
             ['password' => bcrypt($request->password)]
         ));
+
+        $user['image'] = $file_path.'/'.$file_name;
+        $user->save();
 //        $token = auth('user')->attempt($validator->validated());
 //        return $this->createNewToken($token,'user');
         return $this->apiResponse(null,'created successfully waiting for verify !',200);
@@ -85,6 +97,7 @@ class AuthController extends Controller
         if($validator->fails()){
             return response()->json($validator->errors()->toJson(), 400);
         }
+
         $user = User::create($request->except('address'));
         $doctor = Doctor::create($request->only('address'));
         $user->doctor()->save($doctor);

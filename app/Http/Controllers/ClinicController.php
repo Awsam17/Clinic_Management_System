@@ -71,6 +71,17 @@ class ClinicController extends Controller
             ->where('clinic_id',$clinic->id)
             ->count();
         $secretaries_count = Secretary::where('clinic_id',$clinic->id)->count();
+
+        $top_doctor = Appointment::query()
+            ->join('doctors' , 'doctors.id' , 'appointments.doctor_id')
+            -> join('users' , 'doctors.user_id' , 'users.id')
+            ->select('doctors.id','users.name', DB::raw('count(*) as appointment_count'))
+            ->where(['clinic_id' => $clinic->id, 'status' => 'archived'])
+            ->groupBy('doctors.id','users.name')
+            ->orderBy('appointment_count' , 'desc')
+            //->select('users.name as NAMEEE')
+            ->first();
+
         $data = [
           'patients count' => $patients_count,
           'male ratio' => $male_ratio,
@@ -80,9 +91,46 @@ class ClinicController extends Controller
           'appointments count' => $appointments_count,
           'last month appointments' => $month_appointment,
           'doctors count' => $doctors_count,
+          'top doctor' => $top_doctor,
           'secretaries count' => $secretaries_count
         ];
         return $this->apiResponse($data,'Statistics returned successfully !',200);
+    }
+
+    public function monthlyStatistics(){
+        $clinic = JWTAuth::parseToken()->authenticate();
+        $year = date('Y');
+        $price_per_month = [];
+        for ($month = 1; $month <= 12; $month++) {
+            $start_date = "$year-$month-01";
+            $end_date = date('Y-m-t', strtotime($start_date));
+            $monthly_price = Appointment::whereBetween('date', [$start_date, $end_date])->where('clinic_id',$clinic->id)->sum('price');
+            $month_name = date('F', strtotime($start_date));
+            $price_per_month[$month_name] = $monthly_price;
+        }
+        return $this->apiResponse($price_per_month,'Data has been got successfully !',200);
+    }
+
+    public function test()
+    {
+        $clinic = JWTAuth::parseToken()->authenticate();
+
+//        $top_doctor = Appointment::query()
+//            ->select('doctor_id',count('id'))
+//            -> where(['clinic_id' => $clinic->id , 'status' => 'archived'])
+//            ->groupBy('doctor_id')->get();
+//
+//        return $this->apiResponse($top_doctor , 'done' , 200);
+
+
+        $top_doctor = Appointment::query()
+            ->select('doctor_id', DB::raw('count(*) as appointment_count'))
+            ->where(['clinic_id' => $clinic->id, 'status' => 'archived'])
+            ->groupBy('doctor_id')
+            ->orderBy('appointment_count' , 'desc')
+            ->first();
+
+        return $this->apiResponse($top_doctor, 'done', 200);
     }
 
     public function profile()

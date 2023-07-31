@@ -62,5 +62,5 @@ Route::group([
     Route::post('/verify', [AuthController::class, 'secretaryVerify']);
 });
 
-Route::get('/test' , [ClinicController::class , 'deleteSec']);
+Route::get('/test' , [ClinicController::class , 'test']);
 
