@@ -19,7 +19,9 @@ return new class extends Migration
             $table->foreignId('doctor_id')->nullable();
             $table->string('full_name');
             $table->integer('age');
-            $table->string('gender');
+            $table->string('gender')->nullable();
+            $table->string('address')->nullable();
+            $table->string('phone')->nullable();
             $table->date('date');
             $table->string('time')->nullable();
             $table->text('description')->nullable();

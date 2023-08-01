@@ -36,6 +36,8 @@ class AppointmentTableSeeder extends Seeder
                 'clinic_id' => Clinic::inRandomOrder()->first()->id,
                 'age' => rand(1, 100),
                 'gender' => ['male', 'female'][random_int(0, 1)],
+                'phone' => '09' . rand(10000000,99999999),
+                'address' => Str::random(10),
                 'status' => ['archived', 'pending', 'booked'][random_int(0, 2)],
                 'price' => rand(10000, 100000),
                 'created_at' => date("Y-m-d", $random_timestamp),

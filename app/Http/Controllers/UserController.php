@@ -36,12 +36,29 @@ class UserController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|between:2,100',
             'phone' => 'required|string|regex:/^\+?[0-9]{10}$/',
-            'image' => 'string',
+            'image' => 'file|mimes:jpg,jpeg',
             'gender' => 'required|string',
         ]);
+
+        if($validator->fails()){
+            return response()->json($validator->errors()->toJson(), 400);
+        }
+
+        $file_ex = $request['image']-> getClientOriginalExtension();
+        $file_name = time().'.'.$file_ex;
+        $file_path = 'images';
+        $request->image -> move($file_path , $file_name);
+
+        $userData = $validator->validated();
+        unset($userData['image']);
+
         $user->update(array_merge(
-            $validator->validated()
+            $userData,
         ));
+
+        $user['image'] = $file_path.'/'.$file_name;
+        $user->save();
+
         return $this->apiResponse(null,'data updated successfully !',200);
     }
 
@@ -332,7 +349,10 @@ class UserController extends Controller
         $request->validate([
             'full_name' => 'string|max:30',
             'age' => 'required|int',
-            'description' => 'max:100'
+            'description' => 'max:100',
+            'gender' => 'string',
+            'phone' => 'string',
+            'address' => 'string'
         ]);
         $request['user_id'] = JWTAuth::parseToken()->authenticate()->id;
 
