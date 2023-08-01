@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Appointment;
 use App\Models\Clinic;
+use App\Models\Doc_clinic;
 use App\Models\Doctor;
 use App\Models\Spec_doc;
 use App\Models\Specialty;
@@ -346,14 +347,31 @@ class UserController extends Controller
 
     public function makeApp(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'full_name' => 'string|max:30',
             'age' => 'required|int',
             'description' => 'max:100',
             'gender' => 'string',
             'phone' => 'string',
-            'address' => 'string'
+            'address' => 'string',
+            'clinic_id' => 'required|exists:clinics,id' ,
+            'doctor_id' => 'required|exists:doctors,id'
         ]);
+
+        if($validator->fails()){
+            return response()->json($validator->errors()->toJson(), 400);
+        }
+
+        $doctorInClinic = Doc_clinic::query()
+            -> where (['clinic_id' => $request->clinic_id  , 'doctor_id' => $request->doctor_id])
+            -> first();
+
+        if (!$doctorInClinic)
+        {
+            return $this->apiResponse(null , 'the doctor is not in the clinic!' , 400);
+        }
+
+
         $request['user_id'] = JWTAuth::parseToken()->authenticate()->id;
 
         $currentDay = Carbon::now()->dayOfWeek;
