@@ -244,7 +244,7 @@ class ClinicController extends Controller
             ->where('appointments.status','pending')
             ->orderBy('appointments.date', 'asc')
             ->orderBy('appointments.created_at', 'asc')
-            ->select('appointments.full_name AS Patient Name','appointments.age','appointments.description','appointments.date' , 'appointments.time' ,'users.name AS Doctor Name')
+            ->select('appointments.id AS id','appointments.full_name AS Patient Name','appointments.age','appointments.description','appointments.date' , 'appointments.time' ,'users.name AS Doctor Name')
             ->get();
         if ($reqs->isEmpty())
         {
