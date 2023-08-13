@@ -354,6 +354,7 @@ class UserController extends Controller
             'gender' => 'string',
             'phone' => 'string',
             'address' => 'string',
+            'time' => 'required|string',
             'clinic_id' => 'required|exists:clinics,id' ,
             'doctor_id' => 'required|exists:doctors,id'
         ]);
@@ -386,6 +387,16 @@ class UserController extends Controller
 
         $dateOfRequestedDay = Carbon::now()->addDays($daysDifference)->format('Y.m.d');
         $request['date'] = $dateOfRequestedDay;
+
+        $prevApp = Appointment::query()->
+            where(['clinic_id' => $request->clinic_id , 'doctor_id' => $request->doctor_id , 'date' => $request->date , 'time' => $request->time])
+        -> first();
+
+        if ($prevApp)
+        {
+            return $this->apiResponse(null , 'the time is not available' , 400);
+        }
+
         Appointment::create($request->all());
         return $this->apiResponse(null,'Making appointment succeeded !',200);
     }
