@@ -389,7 +389,7 @@ class UserController extends Controller
         $request['date'] = $dateOfRequestedDay;
 
         $prevApp = Appointment::query()->
-            where(['clinic_id' => $request->clinic_id , 'doctor_id' => $request->doctor_id , 'date' => $request->date , 'time' => $request->time])
+            where(['clinic_id' => $request->clinic_id , 'doctor_id' => $request->doctor_id , 'date' => $request->date , 'time' => $request->time , 'status'=>'booked'])
         -> first();
 
         if ($prevApp)

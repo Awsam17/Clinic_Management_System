@@ -429,6 +429,27 @@ class ClinicController extends Controller
 
         $appointment['status'] = 'booked';
         $appointment->save();
+
+        $dateString = $appointment['date'];
+        $date = Carbon::createFromFormat('d/m/Y', $dateString);
+
+        $dayOfWeekNumber = $date->dayOfWeek;
+
+        $doc_time = Worked_time::query()
+            ->where(['doctor_id' => $appointment->doctor_id , 'clinic_id' => $appointment->clinic_id , 'day'=>$dayOfWeekNumber])->first();
+
+        $times = json_decode($doc_time->av_times, true);
+        $timeToDelete = $appointment['time'];
+
+        $index = array_search($timeToDelete, $times);
+
+        if ($index !== false) {
+            unset($times[$index]);
+        }
+
+        $doc_time->av_times = json_encode($times);
+        $doc_time->save();
+
         return $this->apiResponse(null , "Appointment has been approved successfully!");
     }
 
