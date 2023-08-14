@@ -446,4 +446,13 @@ class UserController extends Controller
         return $this->apiResponse($incoming_apps,'Done !',200);
     }
 
+    public function notifications()
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+        $notifications = $user->notifications;
+        if($notifications->isEmpty())
+            return $this->apiResponse(null,'No notifications found !',404);
+        return $this->apiResponse($notifications,'Notifications has been got successfully !',200);
+    }
+
 }

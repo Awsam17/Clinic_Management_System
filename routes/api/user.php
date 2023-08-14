@@ -37,5 +37,6 @@ Route::group([
     Route::post('/make_app', [UserController::class, 'makeApp']);
     Route::get('/profile', [UserController::class, 'profile']);
     Route::post('/edit_profile', [UserController::class, 'edit']);
+    Route::get('/notifications', [UserController::class, 'notifications']);
 });
 

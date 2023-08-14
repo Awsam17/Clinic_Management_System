@@ -29,6 +29,7 @@ class User extends Authenticatable implements JWTSubject
         'reports_num',
         'gender',
         'is_doctor',
+        'device_key'
     ];
    // protected $guarded = [];
 
@@ -45,6 +46,11 @@ class User extends Authenticatable implements JWTSubject
     public function reports() : HasMany
     {
         return $this->hasMany(Report::class);
+    }
+
+    public function notifications() : HasMany
+    {
+        return $this->hasMany(Notification::class);
     }
 
     /**

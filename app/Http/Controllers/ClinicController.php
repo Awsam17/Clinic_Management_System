@@ -13,7 +13,9 @@ use App\Models\Patient;
 use App\Models\Region;
 use App\Models\Secretary;
 use App\Models\Specialty;
+use App\Models\User;
 use App\Models\Worked_time;
+use Exception;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
@@ -195,6 +197,14 @@ class ClinicController extends Controller
 
         $clinic->num_of_doctors++;
         $clinic->save();
+
+        $user = $doctor->user;
+        $device_key = $user->device_key;
+        $body = "Congrats, your application for our clinic has been approved successfully !";
+        $title = $clinic->name;
+
+        $this->sendNotification($device_key,$body,$title);
+
         $apply->delete();
         return $this->apiResponse(null,'Done !','200');
     }
@@ -390,6 +400,14 @@ class ClinicController extends Controller
     {
         $clinic = JWTAuth::parseToken()->authenticate();
         $doctor_id = $_GET['id'];
+        $doctor = Doctor::find($doctor_id);
+        $user = $doctor->user;
+
+        $device_key = $user->device_key;
+        $body = "Unfortunately, your application for our clinic has been rejected !";
+        $title = $clinic->name ;
+
+        $this->sendNotification($device_key,$body,$title);
         $doc_apply = Doc_apply::where(['clinic_id'=>$clinic->id , 'doctor_id'=>$doctor_id])->delete();
         if ($doc_apply == 0)
             return $this->apiResponse(null , 'Some thing went wrong!' , 400);
@@ -400,10 +418,22 @@ class ClinicController extends Controller
     {
         $clinic = JWTAuth::parseToken()->authenticate();
         $appointment_id = $_GET['id'];
+        $appointment = Appointment::find($appointment_id);
+        $clinic = Clinic::find($appointment->clinic_id);
+        $device_key = User::query()
+            ->where('id',$appointment->user_id)
+            ->select('device_key')
+            ->get();
+
+        $body = "Sorry! your appointment in ' . $appointment->date . ' at ' . $appointment->time . ' has been rejected , try another time please !";
+        $title = $clinic->name;
+
+        $this->sendNotification($device_key,$body,$title);
+
         $delete_app = Appointment::where(['id' => $appointment_id , 'clinic_id'=>$clinic->id , 'status' => 'pending'])->delete();
         if ($delete_app == 0)
             return $this->apiResponse(null , 'Some thing went wrong!' , 400);
-        return $this->apiResponse(null , 'Appointment has beed rejected successfully' , 200);
+        return $this->apiResponse(null , 'Appointment has been rejected successfully' , 200);
     }
 
     public function deleteAppointment()
@@ -452,7 +482,49 @@ class ClinicController extends Controller
         $doc_time->av_times = json_encode($times);
         $doc_time->save();
 
+        $clinic = Clinic::find($appointment->clinic_id);
+        $device_key = User::query()
+            ->where('id',$appointment->user_id)
+            ->select('device_key')
+            ->get();
+
+        $body = "Your appointment in ' . $appointment->date . ' at ' . $appointment->time . ' has been approved successfully !";
+        $title = $clinic->name;
+
+        $this->sendNotification($device_key,$body,$title);
+
         return $this->apiResponse(null , "Appointment has been approved successfully!");
+    }
+
+    public function sendNotification($device_key,$body,$title)
+    {
+        try {
+            $URL = 'https://fcm.googleapis.com/fcm/send';
+            $data = '{
+                "to" : "' . $device_key . '",
+                "notification" : {
+                    "body" : "' . $body . '",
+                    "title" : "' . $title . '"
+                    },
+                }';
+            $crl = curl_init();
+
+            $header = array();
+            $header[] = 'Content-type: application/json';
+            $header[] = 'Authorization: key=' . env('SERVER_API_KEY');
+            curl_setopt($crl, CURLOPT_SSL_VERIFYPEER, false);
+
+            curl_setopt($crl, CURLOPT_URL, $URL);
+            curl_setopt($crl, CURLOPT_HTTPHEADER, $header);
+
+            curl_setopt($crl, CURLOPT_POST, true);
+            curl_setopt($crl, CURLOPT_POSTFIELDS, $data);
+            curl_setopt($crl, CURLOPT_RETURNTRANSFER, true);
+            curl_exec($crl);
+        }
+        catch (Exception $e) {
+            return $this->apiResponse(null , "NOTIFICATION FAILED !");
+        }
     }
 
     public function archiveApp()

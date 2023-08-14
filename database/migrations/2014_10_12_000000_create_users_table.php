@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('gender');
             $table->boolean('is_doctor')->default(false);
             $table->string('code')->nullable();
+            $table->string('device_key')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

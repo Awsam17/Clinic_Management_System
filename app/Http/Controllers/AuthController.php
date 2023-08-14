@@ -37,13 +37,20 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required|string|min:4',
+            'device_key' => 'string|required'
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
-        if (! $token = auth('user')->attempt($validator->validated())) {
+        if (! $token = auth('user')->attempt(['email' => $request->email,'password' => $request->password])) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
+        $user = User::query()
+            ->where('email',$request->email)
+            ->first();
+        $user->device_key = $request->device_key;
+        $user->save();
+
         return $this->createNewToken($token , 'user');
     }
 
@@ -65,7 +72,7 @@ class AuthController extends Controller
             return $this->apiResponse(null,'data validated successfully !',202);
         }
 
-        $file_ex = $request['image']-> getClientOriginalExtension();
+        $file_ex = $request['image']->getClientOriginalExtension();
         $file_name = time().'.'.$file_ex;
         $file_path = 'images';
         $request->image -> move($file_path , $file_name);
