@@ -15,7 +15,7 @@ use App\Models\Secretary;
 use App\Models\Specialty;
 use App\Models\Worked_time;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -431,12 +431,13 @@ class ClinicController extends Controller
         $appointment->save();
 
         $dateString = $appointment['date'];
-        $date = Carbon::createFromFormat('d/m/Y', $dateString);
+        $date = Carbon::createFromFormat('Y-m-d', $dateString);
 
         $dayOfWeekNumber = $date->dayOfWeek;
 
         $doc_time = Worked_time::query()
             ->where(['doctor_id' => $appointment->doctor_id , 'clinic_id' => $appointment->clinic_id , 'day'=>$dayOfWeekNumber])->first();
+
 
         $times = json_decode($doc_time->av_times, true);
         $timeToDelete = $appointment['time'];
@@ -445,12 +446,45 @@ class ClinicController extends Controller
 
         if ($index !== false) {
             unset($times[$index]);
+            $times = array_values($times);
         }
 
         $doc_time->av_times = json_encode($times);
         $doc_time->save();
 
         return $this->apiResponse(null , "Appointment has been approved successfully!");
+    }
+
+    public function archiveApp()
+    {
+        //$clinic = JWTAuth::parseToken()->authenticate();
+        $app_id = $_GET['id'];
+        $appointment = Appointment::find($app_id);
+        if ($appointment==null)
+            return $this->apiResponse(null,'appointment not found !',404);
+
+        $appointment->status = 'archived';
+        $appointment->save();
+
+        $dateString = $appointment->date;
+        $date = Carbon::createFromFormat('Y-m-d', $dateString);
+
+        $dayOfWeekNumber = $date->dayOfWeek;
+
+        $doc_time = Worked_time::query()
+            ->where(['doctor_id' => $appointment->doctor_id , 'clinic_id' => $appointment->clinic_id , 'day'=>$dayOfWeekNumber])->first();
+
+
+        $times = json_decode($doc_time->av_times, true);
+
+        array_push($times,$appointment->time);
+        $times = array_values($times);
+        sort($times);
+
+        $doc_time->av_times = json_encode($times);
+        $doc_time->save();
+
+        return $this->apiResponse(null , "Appointment has been archived successfully!");
     }
 
     public function appointments()

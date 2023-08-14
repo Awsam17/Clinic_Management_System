@@ -37,4 +37,5 @@ Route::group([
     Route::post('/delete_appointment', [ClinicController::class, 'deleteAppointment']);
     Route::post('/approve_appointment', [ClinicController::class, 'appreveAppointment']);
     Route::get('/monthly_statistics', [ClinicController::class, 'monthlyStatistics']);
+    Route::post('/archive_appointment' , [ClinicController::class , 'archiveApp']);
 });
