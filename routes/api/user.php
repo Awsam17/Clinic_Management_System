@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -38,5 +39,6 @@ Route::group([
     Route::get('/profile', [UserController::class, 'profile']);
     Route::post('/edit_profile', [UserController::class, 'edit']);
     Route::get('/notifications', [UserController::class, 'notifications']);
+    Route::get('/chats', [ChatController::class, 'getChats']);
 });
 
