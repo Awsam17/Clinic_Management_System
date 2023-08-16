@@ -40,5 +40,6 @@ Route::group([
     Route::post('/edit_profile', [UserController::class, 'edit']);
     Route::get('/notifications', [UserController::class, 'notifications']);
     Route::get('/chats', [ChatController::class, 'getChats']);
+    Route::post('/rate', [UserController::class, 'rate']);
 });
 

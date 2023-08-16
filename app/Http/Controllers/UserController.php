@@ -455,4 +455,19 @@ class UserController extends Controller
         return $this->apiResponse($notifications,'Notifications has been got successfully !',200);
     }
 
+    public function rate()
+    {
+        $clinic_id = $_GET['clinic_id'];
+        $rate = $_GET['rate'];
+        $clinic = Clinic::find($clinic_id);
+        if ($clinic)
+        {
+            $clinic->num_of_rate = $clinic->num_of_rate + 1;
+            $clinic->total_of_rate = $clinic->total_of_rate + $rate;
+            $clinic->save();
+            return $this->apiResponse(null,'Done !',200);
+        }
+        return $this->apiResponse(null,'Clinic not found !',404);
+    }
+
 }

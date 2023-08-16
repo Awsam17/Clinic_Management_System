@@ -9,6 +9,7 @@ use App\Models\Doc_apply;
 use App\Models\Doc_clinic;
 use App\Models\Doctor;
 use App\Models\Medical_report;
+use App\Models\Notification;
 use App\Models\Patient;
 use App\Models\Region;
 use App\Models\Secretary;
@@ -202,6 +203,12 @@ class ClinicController extends Controller
         $device_key = $user->device_key;
         $body = "Congrats, your application for our clinic has been approved successfully !";
         $title = $clinic->name;
+
+        Notification::create([
+            'title' => $title,
+            'body' => $body,
+            'user_id' => $user->id
+        ]);
 
         $this->sendNotification($device_key,$body,$title);
 
@@ -404,6 +411,12 @@ class ClinicController extends Controller
         $body = "Unfortunately, your application for our clinic has been rejected !";
         $title = $clinic->name ;
 
+        Notification::create([
+            'title' => $title,
+            'body' => $body,
+            'user_id' => $user->id
+        ]);
+
         $this->sendNotification($device_key,$body,$title);
         $doc_apply = Doc_apply::where(['clinic_id'=>$clinic->id , 'doctor_id'=>$doctor_id])->delete();
         if ($doc_apply == 0)
@@ -424,6 +437,12 @@ class ClinicController extends Controller
 
         $body = "Sorry! your appointment in $appointment->date at $appointment->time has been rejected , try another time please !";
         $title = $clinic->name;
+
+        Notification::create([
+            'title' => $title,
+            'body' => $body,
+            'user_id' => $appointment->user_id
+        ]);
 
         $this->sendNotification($device_key,$body,$title);
 
@@ -487,6 +506,12 @@ class ClinicController extends Controller
 
         $body = "Your appointment in $appointment->date at $appointment->time has been approved successfully !";
         $title = $clinic->name;
+
+        Notification::create([
+            'title' => $title,
+            'body' => $body,
+            'user_id' => $appointment->user_id
+        ]);
 
         $this->sendNotification($device_key,$body,$title);
 

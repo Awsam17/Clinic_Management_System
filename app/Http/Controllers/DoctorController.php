@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Appointment;
 use App\Models\Clinic;
 use App\Models\Doc_apply;
 use App\Models\Doc_clinic;
@@ -108,6 +109,21 @@ class DoctorController extends Controller
         }
 
         return $this->apiResponse(null,'doctor profile updated successfully !',200);
+    }
+
+    public function doctorApps()
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+        $doctor = $user->doctor;
+        $apps = Appointment::query()
+            ->where('doctor_id',$doctor->id)
+            ->where('status','booked')
+            ->join('clinics','clinics.id','appointments.clinic_id')
+            ->select('clinics.name AS Clinic name','appointments.full_name AS Patient name','appointments.description','appointments.date','appointments.time')
+            ->get();
+        if ($apps->isEmpty())
+            return $this->apiResponse(null,'No results !',200);
+        return $this->apiResponse($apps,'Appointments returned successfully !',200);
     }
 
 }

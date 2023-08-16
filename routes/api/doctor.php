@@ -22,5 +22,6 @@ Route::group([
     Route::post('/apply', [DoctorController::class, 'apply']);
     Route::get('/profile', [DoctorController::class, 'doctor_profile']);
     Route::post('/edit_profile', [DoctorController::class, 'doctor_edit']);
+    Route::get('/doctor_apps', [DoctorController::class, 'doctorApps']);
 });
 
