@@ -47,8 +47,10 @@ class DoctorController extends Controller
     {
         $id = $_GET['id'];
 
-        $data = Doctor::find($id);
-        $user = $data->user;
+        $user = User::find($id);
+        $data =$user->doctor;
+        //dd($data);
+        //$user = $data->user;
 
         $specialties = Specialty::query()
             ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
