@@ -332,10 +332,7 @@ class ClinicController extends Controller
     {
         $clinic = JWTAuth::parseToken()->authenticate();
         $patients = Patient::query()
-            ->join('medical_reports','patients.id','medical_reports.patient_id')
-            ->where('medical_reports.clinic_id',$clinic->id)
-            ->select('patients.*')
-            ->distinct('patients.id')
+            ->where('clinic_id',$clinic->id)
             ->get();
         if ($patients->isEmpty())
         {
@@ -422,10 +419,10 @@ class ClinicController extends Controller
         $clinic = Clinic::find($appointment->clinic_id);
         $device_key = User::query()
             ->where('id',$appointment->user_id)
-            ->select('device_key')
-            ->get();
+            ->pluck('device_key')
+            ->first();
 
-        $body = "Sorry! your appointment in ' . $appointment->date . ' at ' . $appointment->time . ' has been rejected , try another time please !";
+        $body = "Sorry! your appointment in $appointment->date at $appointment->time has been rejected , try another time please !";
         $title = $clinic->name;
 
         $this->sendNotification($device_key,$body,$title);
@@ -485,10 +482,10 @@ class ClinicController extends Controller
         $clinic = Clinic::find($appointment->clinic_id);
         $device_key = User::query()
             ->where('id',$appointment->user_id)
-            ->select('device_key')
-            ->get();
+            ->pluck('device_key')
+            ->first();
 
-        $body = "Your appointment in ' . $appointment->date . ' at ' . $appointment->time . ' has been approved successfully !";
+        $body = "Your appointment in $appointment->date at $appointment->time has been approved successfully !";
         $title = $clinic->name;
 
         $this->sendNotification($device_key,$body,$title);
@@ -559,10 +556,36 @@ class ClinicController extends Controller
         return $this->apiResponse(null , "Appointment has been archived successfully!");
     }
 
-    public function appointments()
+    public function addPatient(Request $request)
     {
-
+        $clinic = JWTAuth::parseToken()->authenticate();
+        $request->validate([
+            'full_name' => 'required|string',
+            'mother_name' => 'string',
+            'age' => 'int',
+            'gender' => 'string',
+            'address' => 'string',
+            'blood_type' => 'string',
+            'description' => 'string',
+            'phone' => 'string',
+        ]);
+        $request['clinic_id'] = $clinic->id;
+        Patient::create($request->all());
+        return $this->apiResponse(null,'Patient created successfully !',200);
     }
 
+    public function addMedicalReport(Request $request)
+    {
+        $clinic = JWTAuth::parseToken()->authenticate();
+        $request->validate([
+            'name' => 'required|string',
+            'specialty' => 'required|string',
+            'description' => 'string',
+            'patient_id' => 'required'
+        ]);
+        $request['clinic_id'] = $clinic->id;
+        Medical_report::create($request->all());
+        return $this->apiResponse(null,'Medical report created successfully !',200);
+    }
 
 }

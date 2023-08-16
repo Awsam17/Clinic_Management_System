@@ -38,4 +38,6 @@ Route::group([
     Route::post('/approve_appointment', [ClinicController::class, 'appreveAppointment']);
     Route::get('/monthly_statistics', [ClinicController::class, 'monthlyStatistics']);
     Route::post('/archive_appointment' , [ClinicController::class , 'archiveApp']);
+    Route::post('/add_patient' , [ClinicController::class , 'addPatient']);
+    Route::post('/add_medical_report' , [ClinicController::class , 'addMedicalReport']);
 });
