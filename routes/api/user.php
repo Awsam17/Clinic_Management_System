@@ -40,6 +40,9 @@ Route::group([
     Route::post('/edit_profile', [UserController::class, 'edit']);
     Route::get('/notifications', [UserController::class, 'notifications']);
     Route::get('/chats', [ChatController::class, 'getChats']);
+    Route::post('/create_chat', [ChatController::class, 'createChat']);
+    Route::get('/chat_messages', [ChatController::class, 'chatMessages']);
+    Route::post('/send_message', [ChatController::class, 'sendMessage']);
     Route::post('/rate', [UserController::class, 'rate']);
 });
 

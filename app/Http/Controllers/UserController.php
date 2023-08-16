@@ -404,7 +404,12 @@ class UserController extends Controller
     public function archivedApps()
     {
         $user = JWTAuth::parseToken()->authenticate();
-        $archived_apps = $user->appointments()->where('status', 'archived')->get();
+        $archived_apps = $user->appointments()->where('status', 'archived')
+            ->join('clinics', 'appointments.clinic_id' , 'clinics.id')
+            ->join('doctors' , 'appointments.doctor_id' , 'doctors.id')
+            ->join('users' , 'doctors.user_id' , 'users.id')
+            ->select('appointments.id','appointments.user_id','clinics.name as clinic_name' ,'users.name as doctor_name' , 'appointments.full_name' , 'appointments.age' , 'appointments.gender' , 'appointments.date' , 'appointments.time' , 'appointments.description' , 'appointments.hide_user' , 'appointments.status' , 'appointments.price' , 'appointments.created_at', 'appointments.updated_at')
+            ->get();
         if ($archived_apps->isEmpty())
         {
             return $this->apiResponse(null,'No archived appointments found !',200);
@@ -415,7 +420,12 @@ class UserController extends Controller
     public function bookedApps()
     {
         $user = JWTAuth::parseToken()->authenticate();
-        $booked_apps = $user->appointments()->where('status','booked')->get();
+        $booked_apps = $user->appointments()->where('status','booked')
+            ->join('clinics', 'appointments.clinic_id' , 'clinics.id')
+            ->join('doctors' , 'appointments.doctor_id' , 'doctors.id')
+            ->join('users' , 'doctors.user_id' , 'users.id')
+            ->select('appointments.id','appointments.user_id','clinics.name as clinic_name' ,'users.name as doctor_name' , 'appointments.full_name' , 'appointments.age' , 'appointments.gender' , 'appointments.date' , 'appointments.time' , 'appointments.description' , 'appointments.hide_user' , 'appointments.status' , 'appointments.price' , 'appointments.created_at', 'appointments.updated_at')
+            ->get();
         if ($booked_apps->isEmpty())
         {
             return $this->apiResponse(null,'No booked appointments found !',200);
@@ -432,11 +442,17 @@ class UserController extends Controller
     public function incomingApps()
     {
         $user = JWTAuth::parseToken()->authenticate();
-        $incoming_apps = $user->appointments()->where('status','incoming')->get();
+        $incoming_apps = $user->appointments()->where('status','pending')
+            ->join('clinics', 'appointments.clinic_id' , 'clinics.id')
+            ->join('doctors' , 'appointments.doctor_id' , 'doctors.id')
+            ->join('users' , 'doctors.user_id' , 'users.id')
+            ->select('appointments.id','appointments.user_id','clinics.name as clinic_name' ,'users.name as doctor_name' , 'appointments.full_name' , 'appointments.age' , 'appointments.gender' , 'appointments.date' , 'appointments.time' , 'appointments.description' , 'appointments.hide_user' , 'appointments.status' , 'appointments.price' , 'appointments.created_at', 'appointments.updated_at')
+            ->get();
         if ($incoming_apps->isEmpty())
         {
             return $this->apiResponse(null,'No incoming appointments found !',200);
         }
+
 //        $archived_apps = User::query()
 //            ->join('appointments','appointments.user_id','=', 'users.id')
 //            ->where('users.id','=',)
