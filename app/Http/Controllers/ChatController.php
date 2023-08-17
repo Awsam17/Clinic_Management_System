@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NewMessageSent;
 use App\Models\Chat;
 use App\Models\Message;
 use Illuminate\Http\Request;
@@ -112,6 +113,8 @@ class ChatController extends Controller
             'chat_id' => $request->chat_id,
             'body' => $request->body
         ]);
+
+        broadcast(new NewMessageSent($message))->toOthers();
 
         return $this->apiResponse($message , 'send successfully!' , 200);
     }
