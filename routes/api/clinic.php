@@ -40,4 +40,5 @@ Route::group([
     Route::post('/archive_appointment' , [ClinicController::class , 'archiveApp']);
     Route::post('/add_patient' , [ClinicController::class , 'addPatient']);
     Route::post('/add_medical_report' , [ClinicController::class , 'addMedicalReport']);
+    Route::get('/archived_appointments', [ClinicController::class, 'archivedAppointments']);
 });

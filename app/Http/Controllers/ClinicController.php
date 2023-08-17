@@ -280,7 +280,7 @@ class ClinicController extends Controller
             ->where('clinics.id',$clinic->id)
             ->where('appointments.status','booked')
             ->orderBy('appointments.date', 'asc')
-            ->select('appointments.full_name AS Patient Name','appointments.age','appointments.description','appointments.date' ,'appointments.time','users.name AS Doctor Name')
+            ->select('appointments.id','appointments.full_name AS Patient Name','appointments.age','appointments.description','appointments.date' ,'appointments.time','users.name AS Doctor Name')
             ->get();
         if ($reqs->isEmpty())
         {
@@ -611,6 +611,25 @@ class ClinicController extends Controller
         $request['clinic_id'] = $clinic->id;
         Medical_report::create($request->all());
         return $this->apiResponse(null,'Medical report created successfully !',200);
+    }
+
+    public function archivedAppointments()
+    {
+        $clinic = JWTAuth::parseToken()->authenticate();
+        $reqs = Appointment::query()
+            ->join('clinics','clinics.id','appointments.clinic_id')
+            ->join('doctors','doctors.id','appointments.doctor_id')
+            ->join('users','users.id','doctors.user_id')
+            ->where('clinics.id',$clinic->id)
+            ->where('appointments.status','archived')
+            ->orderBy('appointments.date', 'asc')
+            ->select('appointments.id','appointments.full_name AS Patient Name','appointments.age','appointments.description','appointments.date' ,'appointments.time','users.name AS Doctor Name')
+            ->get();
+        if ($reqs->isEmpty())
+        {
+            return $this->apiResponse(null,'no appointment  found !',404);
+        }
+        return $this->apiResponse($reqs,'Appointments returned successfully !',200);
     }
 
 }
