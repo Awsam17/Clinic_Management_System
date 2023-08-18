@@ -64,7 +64,7 @@ class UserController extends Controller
         return $this->apiResponse(null,'data updated successfully !',200);
     }
 
-    public function home()
+    public function home(Request $request)
     {
         $user = JWTAuth::parseToken()->authenticate();
         $user_data = [
@@ -72,7 +72,11 @@ class UserController extends Controller
             'image' => $user->image,
         ];
 
-        $specialties = Specialty::all();
+        $lang = $request->header('lang');
+        if($lang == 'ar')
+            $specialties = Specialty::select('id', 'name' ,'created_at' , 'updated_at')->get();
+        else
+            $specialties = Specialty::select('id', 'nameEn' ,'created_at' , 'updated_at')->get();
 
         $clinics = Clinic::query()->join('addresses','addresses.id','=','clinics.address_id')
             ->join('regions','regions.id','=','addresses.region_id')
@@ -97,9 +101,13 @@ class UserController extends Controller
         return $this->apiResponse($clinics, 'all clinic has been got successfully !', 200);
     }
 
-    public function getSpecialties()
+    public function getSpecialties(Request $request)
     {
-        $specialties = Specialty::all();
+        $lang = $request->header('lang');
+        if($lang == 'ar')
+            $specialties = Specialty::select('id', 'name' ,'created_at' , 'updated_at')->get();
+        else
+            $specialties = Specialty::select('id', 'nameEn' ,'created_at' , 'updated_at')->get();
         return $this->apiResponse($specialties, 'all specialties has been got successfully !', 200);
     }
 

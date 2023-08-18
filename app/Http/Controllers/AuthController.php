@@ -53,6 +53,8 @@ class AuthController extends Controller
 
         if ($user->email_verified_at == null)
             return $this->apiResponse(null,'You have to verify first !',401);
+
+
         return $this->createNewToken($token , 'user');
     }
 
