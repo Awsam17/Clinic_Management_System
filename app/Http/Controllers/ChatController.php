@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\NewMessageSent;
 use App\Models\Chat;
 use App\Models\Message;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -113,6 +114,9 @@ class ChatController extends Controller
             'chat_id' => $request->chat_id,
             'body' => $request->body
         ]);
+
+        $chat->touch();
+        $chat->save();
 
         broadcast(new NewMessageSent($message))->toOthers();
 
