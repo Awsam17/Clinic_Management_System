@@ -22,7 +22,7 @@ Broadcast::channel('chat.{id}', function ($id) {
     return true;
 });
 
-Broadcast::channel('fawaz', function () {
-    return true;
-});
+//Broadcast::channel('fawaz', function () {
+//    return true;
+//});
 
