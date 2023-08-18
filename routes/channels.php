@@ -21,3 +21,8 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 Broadcast::channel('chat.{id}', function ($id) {
     return true;
 });
+
+Broadcast::channel('fawaz', function () {
+    return true;
+});
+

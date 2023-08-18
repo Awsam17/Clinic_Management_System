@@ -33,7 +33,8 @@ class NewMessageSent implements ShouldBroadcast
      */
     public function broadcastOn() : channel
     {
-        return new Channel('chat.'.$this->message->chat_id);
+        //return new Channel('chat.'.$this->message->chat_id);
+        return new Channel('fawaz');
     }
 
     public function broadcastWith(): array

@@ -114,6 +114,7 @@ class UserController extends Controller
             $data = $doctor->user;
             $doctor_info = [
                 'id' => $doctor->id,
+                'user_id' => $data->id,
                 'name' => $data->name,
                 'phone' => $data->phone,
                 'image' => $data->image,
@@ -146,6 +147,7 @@ class UserController extends Controller
                 ->get();
             $doctor_info = [
                 'id' => $doctor->id,
+                'user_id' => $data->id,
                 'name' => $data->name,
                 'image' => $data->image,
                 'specialties' => $specialties
