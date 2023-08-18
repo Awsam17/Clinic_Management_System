@@ -78,7 +78,7 @@ class DoctorController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|between:2,100',
             'phone' => 'required|string|regex:/^\+?[0-9]{10}$/',
-            'image' => 'string',
+            'image' => 'file|mimes:jpg,jpeg',
             'gender' => 'required|string',
 
         ]);
@@ -90,10 +90,22 @@ class DoctorController extends Controller
             'specialties.*.exp_years' => 'required|integer'
         ]);
 
-        $user->update(array_merge(
-            $validator->validated()
-        ));
+        if($request->image != null) {
+            $file_ex = $request['image']->getClientOriginalExtension();
+            $file_name = time() . '.' . $file_ex;
+            $file_path = 'images';
+            $request->image->move($file_path, $file_name);
+        }
 
+        $userData = $validator->validated();
+        unset($userData['image']);
+
+        $user->update(array_merge(
+            $userData
+        ));
+        if($request->image != null)
+            $user['image'] = $file_path.'/'.$file_name;
+        $user->save();
         $doctor->update(array_merge($validator_doctor->validated()
         ));
 

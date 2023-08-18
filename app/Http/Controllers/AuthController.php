@@ -51,6 +51,8 @@ class AuthController extends Controller
         $user->device_key = $request->device_key;
         $user->save();
 
+        if ($user->email_verified_at == null)
+            return $this->apiResponse(null,'You have to verify first !',401);
         return $this->createNewToken($token , 'user');
     }
 
@@ -71,12 +73,12 @@ class AuthController extends Controller
         {
             return $this->apiResponse(null,'data validated successfully !',202);
         }
-
-        $file_ex = $request['image']->getClientOriginalExtension();
-        $file_name = time().'.'.$file_ex;
-        $file_path = 'images';
-        $request->image -> move($file_path , $file_name);
-
+        if($request->image != null) {
+            $file_ex = $request['image']->getClientOriginalExtension();
+            $file_name = time() . '.' . $file_ex;
+            $file_path = 'images';
+            $request->image->move($file_path, $file_name);
+        }
         $userData = $validator->validated();
         unset($userData['image']);
 
@@ -84,8 +86,8 @@ class AuthController extends Controller
             $userData,
             ['password' => bcrypt($request->password)]
         ));
-
-        $user['image'] = $file_path.'/'.$file_name;
+        if($request->image != null)
+            $user['image'] = $file_path.'/'.$file_name;
         $user->save();
 //        $token = auth('user')->attempt($validator->validated());
 //        return $this->createNewToken($token,'user');
@@ -104,8 +106,17 @@ class AuthController extends Controller
         if($validator->fails()){
             return response()->json($validator->errors()->toJson(), 400);
         }
+        if($request->image != null) {
+            $file_ex = $request['image']->getClientOriginalExtension();
+            $file_name = time() . '.' . $file_ex;
+            $file_path = 'images';
+            $request->image->move($file_path, $file_name);
+        }
 
         $user = User::create($request->except('address'));
+        if($request->image != null)
+            $user['image'] = $file_path.'/'.$file_name;
+        $user->save();
         $doctor = Doctor::create($request->only('address'));
         $user->doctor()->save($doctor);
         // specilaities ..
@@ -240,16 +251,30 @@ class AuthController extends Controller
             'email' => 'required|string|email|max:100|unique:clinics',
             'password' => 'required|string|min:4',
             'phone' => 'required|string|regex:/^\+?[0-9]{10}$/',
-            'image' => 'string',
+            'image' => 'file|mimes:jpg,jpeg',
             'description' => 'string|max:500',
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors()->toJson(), 400);
         }
+        if($request->image != null) {
+            $file_ex = $request['image']->getClientOriginalExtension();
+            $file_name = time() . '.' . $file_ex;
+            $file_path = 'images';
+            $request->image->move($file_path, $file_name);
+        }
+        $userData = $validator->validated();
+        unset($userData['image']);
+
         $clinic = Clinic::create(array_merge(
-            $validator->validated(),
+            $userData,
             ['password' => bcrypt($request->password)]
         ));
+
+        if($request->image != null)
+            $clinic['image'] = $file_path.'/'.$file_name;
+        $clinic->save();
+
         $address = Address::create([
             'address' => $request->address,
             'region_id' => $request->region_id
@@ -272,6 +297,9 @@ class AuthController extends Controller
         if (! $token = auth('clinic')->attempt($validator->validated())) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
+        $clinic = Clinic::where('email',$request->email)->first();
+        if ($clinic->email_verified_at == null)
+            return $this->apiResponse(null,'You have to verify first !',401);
         return $this->createNewToken($token,'clinic');
     }
 

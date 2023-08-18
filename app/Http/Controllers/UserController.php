@@ -44,11 +44,12 @@ class UserController extends Controller
         if($validator->fails()){
             return response()->json($validator->errors()->toJson(), 400);
         }
-
-        $file_ex = $request['image']-> getClientOriginalExtension();
-        $file_name = time().'.'.$file_ex;
-        $file_path = 'images';
-        $request->image -> move($file_path , $file_name);
+        if($request->image != null) {
+            $file_ex = $request['image']->getClientOriginalExtension();
+            $file_name = time() . '.' . $file_ex;
+            $file_path = 'images';
+            $request->image->move($file_path, $file_name);
+        }
 
         $userData = $validator->validated();
         unset($userData['image']);
@@ -56,8 +57,8 @@ class UserController extends Controller
         $user->update(array_merge(
             $userData,
         ));
-
-        $user['image'] = $file_path.'/'.$file_name;
+        if($request->image != null)
+            $user['image'] = $file_path.'/'.$file_name;
         $user->save();
 
         return $this->apiResponse(null,'data updated successfully !',200);
