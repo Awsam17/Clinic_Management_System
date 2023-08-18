@@ -45,7 +45,7 @@ class ChatController extends Controller
         $chats1 = Chat::query()
             ->where(['chats.user_id' => $user->id])
             ->join('users' , 'chats.second_user_id' , 'users.id')
-            ->select('users.name as name' , 'users.id as doctor_id_as_user')
+            ->select('chats.id','users.name as name' , 'users.id as doctor_id_as_user')
             ->orderBy('chats.updated_at' ,'desc')
             ->get()
             ->toArray();
@@ -53,7 +53,7 @@ class ChatController extends Controller
         $chats2 = Chat::query()
             ->Where(['chats.second_user_id' => $user->id])
             ->join('users' , 'chats.user_id' , 'users.id')
-            ->select('users.name as name' , 'users.id as doctor_id_as_user')
+            ->select('chats.id','users.name as name' , 'users.id as doctor_id_as_user')
             ->orderBy('chats.updated_at')
             ->get()
             ->toArray();
