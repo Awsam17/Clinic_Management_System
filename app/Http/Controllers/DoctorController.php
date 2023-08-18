@@ -94,7 +94,6 @@ class DoctorController extends Controller
             $file_ex = $request['image']->getClientOriginalExtension();
             $file_name = time() . '.' . $file_ex;
             $file_path = 'images';
-            $request->image->move($file_path, $file_name);
         }
 
         $userData = $validator->validated();
@@ -104,7 +103,11 @@ class DoctorController extends Controller
             $userData
         ));
         if($request->image != null)
+        {
+            $request->image->move($file_path, $file_name);
             $user['image'] = $file_path.'/'.$file_name;
+        }
+
         $user->save();
         $doctor->update(array_merge($validator_doctor->validated()
         ));
