@@ -43,7 +43,7 @@ class DoctorController extends Controller
         return $this->apiResponse(null,'Done !','200');
     }
 
-    public function doctor_profile()
+    public function doctor_profile(Request $request)
     {
         $id = $_GET['id'];
 
@@ -51,12 +51,21 @@ class DoctorController extends Controller
         $data =$user->doctor;
         //dd($data);
         //$user = $data->user;
-
-        $specialties = Specialty::query()
-            ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
-            ->where('spec_docs.doctor_id', '=', $data->id)
-            ->select('name AS specialty_name','exp_years AS experience_years')
-            ->get();
+        $lang = $request->header('lang');
+        if ($lang == 'en') {
+            $specialties = Specialty::query()
+                ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
+                ->where('spec_docs.doctor_id', '=', $data->id)
+                ->select('nameEn AS specialty_name','exp_years AS experience_years')
+                ->get();
+        }
+        else {
+            $specialties = Specialty::query()
+                ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
+                ->where('spec_docs.doctor_id', '=', $data->id)
+                ->select('name AS specialty_name', 'exp_years AS experience_years')
+                ->get();
+        }
         $doctor_info = [
             'id' => $data->id,
             'name' => $user->name,

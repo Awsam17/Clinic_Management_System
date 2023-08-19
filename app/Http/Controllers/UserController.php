@@ -73,10 +73,10 @@ class UserController extends Controller
         ];
 
         $lang = $request->header('lang');
-        if($lang == 'ar')
-            $specialties = Specialty::select('id', 'name' ,'created_at' , 'updated_at')->get();
-        else
+        if($lang == 'en')
             $specialties = Specialty::select('id', 'nameEn' ,'created_at' , 'updated_at')->get();
+        else
+            $specialties = Specialty::select('id', 'name' ,'created_at' , 'updated_at')->get();
 
         $clinics = Clinic::query()->join('addresses','addresses.id','=','clinics.address_id')
             ->join('regions','regions.id','=','addresses.region_id')
@@ -138,7 +138,7 @@ class UserController extends Controller
         return $this->apiResponse(null, 'no results !', 404);
     }
 
-    public function getClinicDoctors()
+    public function getClinicDoctors(Request $request)
     {
         $clinic_id = $_GET['id'];
         $doctors_data = [];
@@ -149,11 +149,21 @@ class UserController extends Controller
             ->get();
         foreach ($doctors as $doctor) {
             $data = $doctor->user;
-            $specialties = Specialty::query()
-                ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
-                ->where('spec_docs.doctor_id', '=', $doctor->id)
-                ->select('name AS specialty_name','exp_years AS experience_years')
-                ->get();
+            $lang = $request->header('lang');
+            if($lang == 'en'){
+                $specialties = Specialty::query()
+                    ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
+                    ->where('spec_docs.doctor_id', '=', $doctor->id)
+                    ->select('specialty_id','exp_years AS experience_years','nameEn AS specialty name')
+                    ->get();
+            }
+            else {
+                $specialties = Specialty::query()
+                    ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
+                    ->where('spec_docs.doctor_id', '=', $doctor->id)
+                    ->select('specialty_id', 'exp_years AS experience_years', 'name AS specialty name')
+                    ->get();
+            }
             $doctor_info = [
                 'id' => $doctor->id,
                 'user_id' => $data->id,
@@ -181,18 +191,27 @@ class UserController extends Controller
         return $this->apiResponse($clinic,'ok ',200);
     }
 
-    public function doctorProfile()
+    public function doctorProfile(Request $request)
     {
         $id = $_GET['id'];
         $doctor = Doctor::find($id);
         if(!empty($doctor)) {
             $data = $doctor->user;
-            $specialties = Specialty::query()
-                ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
-                ->where('spec_docs.doctor_id', '=', $doctor->id)
-                ->select('specialty_id','exp_years AS experience_years','name')
-                ->get();
-
+            $lang = $request->header('lang');
+            if($lang == 'en'){
+                $specialties = Specialty::query()
+                    ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
+                    ->where('spec_docs.doctor_id', '=', $doctor->id)
+                    ->select('specialty_id','exp_years AS experience_years','nameEn AS specialty name')
+                    ->get();
+            }
+            else {
+                $specialties = Specialty::query()
+                    ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
+                    ->where('spec_docs.doctor_id', '=', $doctor->id)
+                    ->select('specialty_id', 'exp_years AS experience_years', 'name AS specialty name')
+                    ->get();
+            }
             $clinics = Clinic::query()
                 ->join('doc_clinics', 'clinics.id', '=', 'doc_clinics.clinic_id')
                 ->where('doc_clinics.doctor_id', '=', $doctor->id)
@@ -215,18 +234,28 @@ class UserController extends Controller
         return $this->apiResponse(null, "doctor's profile not found !", 200);
     }
 
-    public function doctorProfileInClinic()
+    public function doctorProfileInClinic(Request $request)
     {
         $clinic_id = $_GET['clinic_id'];
         $doctor_id = $_GET['doctor_id'];
         $doctor = Doctor::find($doctor_id);
         if(!empty($doctor)) {
             $data = $doctor->user;
-            $specialties = Specialty::query()
-                ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
-                ->where('spec_docs.doctor_id', '=', $doctor->id)
-                ->select('specialty_id','exp_years AS experience_years','name')
-                ->get();
+            $lang = $request->header('lang');
+            if($lang == 'en'){
+                $specialties = Specialty::query()
+                    ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
+                    ->where('spec_docs.doctor_id', '=', $doctor->id)
+                    ->select('specialty_id','exp_years AS experience_years','nameEn AS specialty name')
+                    ->get();
+            }
+            else {
+                $specialties = Specialty::query()
+                    ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
+                    ->where('spec_docs.doctor_id', '=', $doctor->id)
+                    ->select('specialty_id', 'exp_years AS experience_years', 'name AS specialty name')
+                    ->get();
+            }
 
             $clinics = Clinic::query()
                 ->join('doc_clinics', 'clinics.id', '=', 'doc_clinics.clinic_id')
@@ -266,7 +295,7 @@ class UserController extends Controller
         return $this->apiResponse(null, 'no results !', 404);
     }
 
-    public function searchClinicDoctors()
+    public function searchClinicDoctors(Request $request)
     {
         $searchText = $_GET['name'];
         $clinic_id = $_GET['id'];
@@ -281,10 +310,21 @@ class UserController extends Controller
         $result = [];
         foreach ($users as $user) {
             $doctor = $user->doctor;
-            $specialties = Specialty::query()
-                ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
-                ->where('spec_docs.doctor_id', '=', $doctor->id)
-                ->get();
+            $lang = $request->header('lang');
+            if($lang == 'en'){
+                $specialties = Specialty::query()
+                    ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
+                    ->where('spec_docs.doctor_id', '=', $doctor->id)
+                    ->select('specialty_id','exp_years AS experience_years','nameEn AS specialty name')
+                    ->get();
+            }
+            else {
+                $specialties = Specialty::query()
+                    ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
+                    ->where('spec_docs.doctor_id', '=', $doctor->id)
+                    ->select('specialty_id', 'exp_years AS experience_years', 'name AS specialty name')
+                    ->get();
+            }
             $temp = [
                 'id' => $user->doctor->id,
                 'name' => $user->name,
@@ -304,7 +344,7 @@ class UserController extends Controller
 
     }
 
-    public function searchSpecialtyDoctors()
+    public function searchSpecialtyDoctors(Request $request)
     {
         $searchText = $_GET['name'];
         $specialty_id = $_GET['id'];
@@ -319,10 +359,21 @@ class UserController extends Controller
         $result = [];
         foreach ($users as $user) {
             $doctor = $user->doctor;
-            $specialties = Specialty::query()
-                ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
-                ->where('spec_docs.doctor_id', '=', $doctor->id)
-                ->get();
+            $lang = $request->header('lang');
+            if($lang == 'en'){
+                $specialties = Specialty::query()
+                    ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
+                    ->where('spec_docs.doctor_id', '=', $doctor->id)
+                    ->select('specialty_id','exp_years AS experience_years','nameEn AS specialty name')
+                    ->get();
+            }
+            else {
+                $specialties = Specialty::query()
+                    ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
+                    ->where('spec_docs.doctor_id', '=', $doctor->id)
+                    ->select('specialty_id', 'exp_years AS experience_years', 'name AS specialty name')
+                    ->get();
+            }
             $temp = [
                 'id' => $user->doctor->id,
                 'name' => $user->name,

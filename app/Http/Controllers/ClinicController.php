@@ -289,7 +289,7 @@ class ClinicController extends Controller
         return $this->apiResponse($reqs,'Appointments returned successfully !',200);
     }
 
-    public function doctors()
+    public function doctors(Request $request)
     {
         $clinic = JWTAuth::parseToken()->authenticate();
         $doctors = Doctor::query()
@@ -305,11 +305,21 @@ class ClinicController extends Controller
         foreach ($doctors as $doctor)
         {
             $user = $doctor->user;
-            $specialties = Specialty::query()
-                ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
-                ->where('spec_docs.doctor_id', '=', $doctor->id)
-                ->select('name AS specialty','exp_years AS experience_years')
-                ->get();
+            $lang = $request->header('lang');
+            if($lang == 'en'){
+                $specialties = Specialty::query()
+                    ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
+                    ->where('spec_docs.doctor_id', '=', $doctor->id)
+                    ->select('specialty_id','exp_years AS experience_years','nameEn AS specialty name')
+                    ->get();
+            }
+            else {
+                $specialties = Specialty::query()
+                    ->join('spec_docs', 'specialties.id', '=', 'spec_docs.specialty_id')
+                    ->where('spec_docs.doctor_id', '=', $doctor->id)
+                    ->select('specialty_id', 'exp_years AS experience_years', 'name AS specialty name')
+                    ->get();
+            }
             $worked_times = Worked_time::where([
                 ['doctor_id', '=', $doctor->id],
                 ['clinic_id', '=', $clinic->id]
